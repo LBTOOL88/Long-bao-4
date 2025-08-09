@@ -34,3 +34,28 @@ body {
 
 /* Performance: virtualize long containers */
 .cv-auto{content-visibility:auto;contain-intrinsic-size:800px 600px;}
+
+/* ===== FIX OVERLAP 2025-08-10 (HOA) ===== */
+:root{
+  --footer-h: 96px;            /* approximate total height of footer (button + copyright) */
+  --footer-gap: 12px;
+}
+/* Keep footer on top of banners and content */
+#main-footer{
+  z-index: 1000 !important;
+}
+/* Reserve space so content doesn't hide under the footer */
+#authScreen,
+#aiCoreSelectionScreen{
+  padding-bottom: calc(var(--footer-h) + var(--footer-gap) + env(safe-area-inset-bottom, 0px)) !important;
+}
+/* Allow the core-selection screen to scroll independently on mobile */
+#aiCoreSelectionScreen{
+  overflow-y: auto !important;
+}
+/* Keep the promo banner from colliding with footer */
+#promo-banner{
+  margin-bottom: calc(var(--footer-h) + var(--footer-gap)) !important;
+}
+/* ===== END FIX OVERLAP ===== */
+
