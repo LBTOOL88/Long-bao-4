@@ -2,10 +2,6 @@
   "name": "lv4-site",
   "private": true,
   "scripts": {
-    "build:css": "tailwindcss -c tailwind.config.js -i ./tailwind.input.css -o ./tailwind.css --minify",
-    "cap:init": "cap init \"Sieu Tool AI\" com.yourname.sieutool --web-dir . || true",
-    "cap:add:ios": "cap add ios",
-    "cap:sync": "cap sync ios",
-    "cap:open:ios": "cap open ios"
+    "build:css": "tailwindcss -c tailwind.config.js -i ./tailwind.input.css -o ./tailwind.css --minify"
   }
 }
