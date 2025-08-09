@@ -1929,7 +1929,21 @@ canvas#matrix, #matrix, canvas.matrix, .matrix, .matrix-canvas, #matrix-canvas, 
                 <!-- analysis-next-predictions block removed -->
             </div>
         </div>
+    </div><!-- Modal cảnh báo sau khi đăng nhập -->
+<div id="post-login-warning" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="post-login-title">
+  <div class="modal-content">
+    <h3 id="post-login-title" class="orbitron-font text-xl md:text-2xl mb-2" style="color: var(--cyan); text-align:center;">CẢNH BÁO</h3>
+    <p class="text-sm md:text-base" style="line-height:1.6; text-align:center;">
+      <strong>CHỈ DUY NHẤT LONG BẢO</strong> KÍCH HOẠT ĐƯỢC TOOL.<br/>
+      LIÊN HỆ ĐÚNG NGƯỜI ĐỂ TRÁNH BỊ GIẢ MẠO VÀ MẤT TIỀN OAN.
+    </p>
+    <div class="modal-actions">
+      <a id="post-login-contact" class="btn btn-secondary" href="https://t.me/longbaoF168" target="_blank" rel="noopener">LIÊN HỆ LONG BẢO</a>
+      <button id="post-login-confirm" class="btn btn-primary">ĐÃ HIỂU, VÀO TOOL</button>
     </div>
+  </div>
+</div>
+
     
     <footer id="main-footer">
         <a id="footer-contact-link" href="https://t.me/longbaoF168" target="_blank">LIÊN HỆ LONG BẢO</a>
@@ -2408,7 +2422,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 isYtReady = true;
                 ytPlayer = new YT.Player('youtube-player', {
                     height: '360', width: '640', videoId: '16GcpkR3rMM',
-                    playerVars: { 'autoplay': 1, 'controls': 0, 'loop': 1, 'playlist': '16GcpkR3rMM' },
+                    \1 playsinline: 1,  'autoplay': 1, 'controls': 0, 'loop': 1, 'playlist': '16GcpkR3rMM' },
                     events: { 'onReady': onPlayerReady }
                 });
             };
@@ -4144,6 +4158,7 @@ KẾ HOẠCH CHI TIẾT CHO VỐN: ${capitalInVND.toLocaleString('vi-VN')}đ
                         DOMElements.userInfoBar.classList.remove('hidden');
                         DOMElements.chatRobotContainer.classList.remove('hidden');
                         decodeText(DOMElements.aiCoreSelectionScreen.querySelector('h1'));
+                        const postModal = document.getElementById('post-login-warning'); if (postModal) postModal.classList.remove('hidden');
                         initChatbot();
                     }, 500);
                 } else {
@@ -4163,6 +4178,7 @@ KẾ HOẠCH CHI TIẾT CHO VỐN: ${capitalInVND.toLocaleString('vi-VN')}đ
         }
         
         init();
+            const __postConfirm = document.getElementById('post-login-confirm'); if (__postConfirm){ __postConfirm.addEventListener('click', ()=>{ document.getElementById('post-login-warning')?.classList.add('hidden'); }); }
 
     </script>
 

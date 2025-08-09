@@ -34,3 +34,39 @@ body {
 
 /* Performance: virtualize long containers */
 .cv-auto{content-visibility:auto;contain-intrinsic-size:800px 600px;}
+
+/* === Promo & Footer spacing (fix mobile overlap) === */
+#promo-banner{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap: 12px;
+  margin: 16px auto 20px;
+  flex-wrap: wrap;
+}
+#promo-banner a{ display:inline-flex; align-items:center; justify-content:center; text-decoration:none; }
+#promo-text{ padding: 10px 14px; border:1px solid var(--gold, #ffd54d); border-radius:12px; background: rgba(255, 220, 0, 0.08); }
+#main-footer{ text-align:center; padding: 12px 10px 28px; }
+#footer-contact-link{
+  display:inline-block;
+  padding: 10px 16px;
+  border: 1px solid var(--cyan, #00e6e6);
+  border-radius: 12px;
+  text-decoration: none;
+  color: var(--cyan, #00e6e6);
+  box-shadow: 0 0 12px rgba(0, 230, 230, .25);
+  margin-top: 10px;
+}
+@media (max-width: 480px){
+  #promo-banner{ margin-bottom: 28px; }
+  #footer-contact-link{ margin-top: 14px; }
+}
+
+/* === Generic modal styles (reused) === */
+.modal-overlay{ position: fixed; inset: 0; background: rgba(0,0,0,.6); display:flex; align-items:center; justify-content:center; z-index: 1000; }
+.modal-overlay.hidden{ display:none; }
+.modal-content{ background: var(--container-bg, rgba(10,25,47,.8)); border:1px solid var(--cyan, #00e6e6); border-radius:16px; padding: 18px; max-width: 520px; width: calc(100% - 32px); box-shadow: 0 0 40px rgba(0, 238, 255, .25); }
+.modal-actions{ display:flex; gap:12px; margin-top:16px; justify-content:flex-end; flex-wrap: wrap; }
+.btn{ display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:10px 14px; border-radius:12px; cursor:pointer; font-weight:600; text-decoration:none; }
+.btn-primary{ background: var(--cyan, #00e6e6); color:#00121f; border:1px solid var(--cyan, #00e6e6); }
+.btn-secondary{ background: transparent; color: var(--gold, #ffd54d); border:1px solid var(--gold, #ffd54d); }
