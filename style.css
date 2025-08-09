@@ -88,3 +88,39 @@ body {
 }
 /* ===== END FIX ===== */
 
+/* ===== MOBILE BREAKPOINTS for CORE SELECTOR (2025-08-10) ===== */
+
+/* Mobile chung (≤640px) */
+@media (max-width: 640px){
+  #core-selector-container{
+    height: clamp(380px, 65dvh, 520px) !important;
+    overflow: visible !important;
+  }
+  .core-card{
+    width: 260px !important;
+    height: 350px !important;
+  }
+  .core-card.active{ transform: translateX(0) scale(1.06) !important; }
+}
+
+/* Nhỏ (≤360px) */
+@media (max-width: 360px){
+  #core-selector-container{ height: clamp(360px, 62dvh, 500px) !important; }
+  .core-card{ width: 240px !important; height: 330px !important; }
+  .core-card.active{ transform: translateX(0) scale(1.04) !important; }
+}
+
+/* Vừa (361–400px) */
+@media (min-width:361px) and (max-width:400px){
+  #core-selector-container{ height: clamp(380px, 64dvh, 520px) !important; }
+  .core-card{ width: 250px !important; height: 340px !important; }
+}
+
+/* Lớn (401–480px) */
+@media (min-width:401px) and (max-width:480px){
+  #core-selector-container{ height: clamp(420px, 66dvh, 560px) !important; }
+  .core-card{ width: 270px !important; height: 360px !important; }
+}
+
+/* ===== END MOBILE BREAKPOINTS ===== */
+
