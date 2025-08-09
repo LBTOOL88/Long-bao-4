@@ -1,0 +1,36 @@
+/* Custom overrides for improved UI and responsiveness */
+/* Thay đổi một số biến màu để dễ nhìn hơn trên nền tối */
+:root {
+  --container-bg: rgba(10, 25, 47, 0.7);
+  --cyan: #00e6e6;
+  --yellow: #ffe600;
+}
+
+/* Điều chỉnh vùng đăng nhập trên thiết bị di động */
+@media (max-width: 640px) {
+  #auth-content {
+    padding: 20px 15px;
+    max-width: 90%;
+  }
+}
+
+/* Thay đổi con trỏ mặc định để thân thiện hơn */
+body {
+  cursor: default;
+}
+/* --- Hard-disable redundant panels (history & next-prediction) in Soi Hủ core --- */
+#history-section, #prediction-section, #history-list, #prediction-list {
+  display: none !important;
+  visibility: hidden !important;
+  height: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: 0 !important;
+}
+
+/* --- Hard-disable 'DỰ ĐOÁN 3 VÁN TIẾP THEO' section in Soi Hủ --- */
+#analysis-next-predictions { display: none !important; }
+
+
+/* Performance: virtualize long containers */
+.cv-auto{content-visibility:auto;contain-intrinsic-size:800px 600px;}

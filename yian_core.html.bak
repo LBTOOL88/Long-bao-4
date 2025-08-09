@@ -1,0 +1,1225 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YIAN SCAN</title>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;700&family=Share+Tech+Mono&display=swap');
+        
+        :root {
+            --bg-color: #010409;
+            --primary-color: #00e5ff; 
+            --glow-color: rgba(0, 229, 255, 0.75);
+            --secondary-color: #c1d7e0;
+            --container-bg: rgba(10, 25, 40, 0.65); 
+            --border-color: rgba(0, 229, 255, 0.3);
+            --error-color: #ff3b3b;
+            --success-color: #34ffb9;
+            --warning-color: #ffd60a;
+            --info-color: #64b5f6;
+            --nuclear-red: #ff1e1e;
+            --font-primary: 'Rajdhani', sans-serif;
+            --font-mono: 'Share Tech Mono', monospace;
+            --prism-gradient: linear-gradient(45deg, #00e5ff, #ff00e0, #ffd60a);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--secondary-color);
+            font-family: var(--font-primary);
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            overflow-x: hidden; 
+        }
+
+        #background-canvas {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: -1;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 2000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            background: rgba(0, 0, 0, 0.9); 
+            display: none;
+            perspective: 1000px;
+            padding: 15px;
+        }
+        
+        #login-canvas {
+            position: absolute; top: 0; left: 0;
+            width: 100%; height: 100%;
+            display: none;
+        }
+        
+        #login-overlay::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: repeating-linear-gradient(0deg, rgba(0,0,0,0) 0, rgba(255,255,255,0.03) 1px, rgba(0,0,0,0) 2px);
+            pointer-events: none;
+            animation: glitch-lines 0.4s steps(1) infinite;
+        }
+        @keyframes glitch-lines {
+            0%, 100% { transform: translateY(0); } 10% { transform: translateY(2px); } 30% { transform: translateY(-3px); } 50% { transform: translateY(5px); } 70% { transform: translateY(-1px); }
+        }
+
+        .app-container {
+            display: none; 
+            width: 100%;
+            min-height: 100vh;
+            max-width: 1400px;
+            padding: 20px;
+            gap: 20px;
+            display: grid;
+            grid-template-columns: 300px 1fr 300px;
+            grid-template-rows: auto 1fr auto;
+            grid-template-areas:
+                "header header header"
+                "left-panel main-panel right-panel"
+                "footer footer footer";
+            opacity: 0;
+            animation: fadeInApp 1s 0.5s forwards;
+        }
+
+        @keyframes fadeInApp { to { opacity: 1; } }
+
+        .panel {
+            background: var(--container-bg); border-radius: 15px; backdrop-filter: blur(16px) saturate(180%); -webkit-backdrop-filter: blur(16px) saturate(180%);
+            padding: 20px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.1);
+            display: flex; flex-direction: column; gap: 15px; overflow: hidden; position: relative; border: 2px solid transparent;
+        }
+        .panel::before {
+            content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+            background: conic-gradient(from var(--angle), var(--prism-gradient)); animation: rotate 6s linear infinite;
+        }
+        .panel > * { position: relative; z-index: 1; }
+        .panel::after {
+            content: ''; position: absolute; inset: 2px; background: #0a1928; border-radius: 14px;
+        }
+        @property --angle { syntax: '<angle>'; initial-value: 0deg; inherits: false; }
+        @keyframes rotate { to { --angle: 360deg; } }
+
+        /* Ẩn hoàn toàn màn hình đăng nhập khi tích hợp với hackbcr2026 */
+        #login-overlay {
+            display: none !important;
+        }
+        /* Hiển thị sẵn màn chọn sảnh để người dùng chọn SEXY/DG */
+        /* Ẩn màn chọn sảnh khi tích hợp trực tiếp (bỏ qua bước chọn sảnh) */
+        #lobby-selection-overlay {
+            display: none !important;
+        }
+
+        /* Ẩn nút "Chọn lại sảnh" khi bỏ qua màn chọn sảnh */
+        #back-to-lobby-button {
+            display: none !important;
+        }
+        
+        .panel-title {
+            font-size: 1.2em; font-weight: 700; color: var(--secondary-color); letter-spacing: 2px; text-transform: uppercase;
+            margin-bottom: 10px; text-shadow: 0 0 4px rgba(0,0,0,0.5); border-bottom: 1px solid var(--border-color); padding-bottom: 10px;
+        }
+
+        .app-header {
+            grid-area: header; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;
+            gap: 15px; padding: 0; border: none; background: none; box-shadow: none; backdrop-filter: none;
+        }
+        .app-header h1 {
+            font-size: 2.5em; font-weight: 700; letter-spacing: 8px; background: var(--prism-gradient);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 0 15px var(--primary-color));
+            text-align: center; flex-grow: 1;
+        }
+        
+        #user-info-panel { display: flex; align-items: center; gap: 10px; font-family: var(--font-mono); }
+        #username-display { color: var(--primary-color); font-weight: 700; font-size: 1.1em; }
+        .header-button {
+            border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-weight: 700;
+            transition: all 0.2s ease; white-space: nowrap;
+        }
+        #back-to-lobby-button { background: var(--info-color); color: #fff; box-shadow: 0 0 10px var(--info-color); }
+        #logout-button { background: var(--error-color); color: #fff; box-shadow: 0 0 10px var(--error-color); }
+        .header-button:hover { transform: scale(1.05); filter: brightness(1.2); }
+
+        .left-panel { grid-area: left-panel; }
+        
+        #core-selector { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .core-button {
+            aspect-ratio: 1 / 1; background: linear-gradient(145deg, #0f2335, #0c1d2c); border: 1px solid rgba(255,255,255,0.1);
+            color: var(--secondary-color); cursor: pointer; border-radius: 10px; display: flex; flex-direction: column;
+            justify-content: center; align-items: center; transition: all 0.2s ease-out; position: relative;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5), inset 0 1px 1px rgba(255,255,255,0.1);
+        }
+        .core-button:hover { transform: translateY(-5px); box-shadow: 0 8px 20px rgba(0,0,0,0.6), inset 0 1px 1px rgba(255,255,255,0.1); }
+        .core-button.active { transform: translateY(-2px); filter: brightness(1.2); }
+        .core-button.active svg { filter: drop-shadow(0 0 8px var(--glow-color)); }
+        .core-button svg { width: 40%; height: 40%; margin-bottom: 8px; transition: all 0.3s ease; }
+        .core-button span { font-weight: 700; font-size: 1em; letter-spacing: 1px; }
+
+        #energy-display { text-align: center; }
+        #energy-bar-outer { width: 100%; height: 15px; background: rgba(0,0,0,0.4); border: 1px solid var(--border-color); border-radius: 8px; padding: 2px; }
+        #energy-bar-inner { width: 100%; height: 100%; background: var(--prism-gradient); border-radius: 5px; transition: width 0.5s, background 0.5s; box-shadow: 0 0 8px var(--success-color); }
+        #energy-bar-inner.low { background: linear-gradient(90deg, var(--warning-color), var(--error-color)); box-shadow: 0 0 8px var(--warning-color); }
+        #energy-percent-text { font-family: var(--font-mono); font-size: 1.2em; margin-top: 8px; color: var(--secondary-color); }
+
+        .main-panel { grid-area: main-panel; }
+        .main-display-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; height: 100%; }
+        #camera-view { position: relative; background: #000; border: 1px dashed var(--border-color); border-radius: 10px; overflow: hidden; min-height: 200px; }
+        #camera-stream { width: 100%; height: 100%; object-fit: cover; }
+        #holo-container { border: 1px dashed var(--border-color); border-radius: 10px; cursor: grab; min-height: 200px; }
+        
+        #scan-animation-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: transparent; display: none; justify-content: center; align-items: center; z-index: 12; }
+        #scan-animation-canvas { width: 100%; height: 100%; }
+        
+        #camera-scanline { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 2; pointer-events: none; background: linear-gradient(rgba(10, 25, 40, 0) 50%, rgba(10, 25, 40, 0.1) 50%), linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px); background-size: 100% 4px, 4px 100%; animation: scanlines 20s linear infinite; }
+        @keyframes scanlines { from { background-position: 0 0; } to { background-position: 0 100%; } }
+        
+        #matrix-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; z-index: 11; opacity: 0.6; pointer-events: none; }
+        #matrix-canvas { display: block; width: 100%; height: 100%; }
+
+        .scan-controls { display: flex; flex-direction: column; align-items: center; gap: 15px; }
+        #scan-button {
+            width: 80%; max-width: 400px; padding: 15px; font-size: 1.5em; font-weight: 700; letter-spacing: 3px;
+            color: #fff; background: var(--prism-gradient); background-size: 200% 200%; border: none; border-radius: 10px;
+            cursor: pointer; transition: all 0.3s ease; text-shadow: 0 1px 5px rgba(0,0,0,0.4); position: relative;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.4), inset 0 1px 2px rgba(255,255,255,0.2); animation: gradient-pan 5s ease infinite;
+        }
+        @keyframes gradient-pan { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+        #scan-button:hover:not(:disabled) { transform: scale(1.05) translateY(-3px); box-shadow: 0 8px 25px rgba(0, 229, 255, 0.4), inset 0 1px 2px rgba(255,255,255,0.2); }
+        #scan-button:disabled { background: #555; color: #999; cursor: not-allowed; animation: none; }
+        
+        #result-display { 
+            background: rgba(0,0,0,0.3); border: 1px solid var(--border-color); border-radius: 10px; padding: 15px;
+            text-align: center; min-height: 150px; display: flex; flex-direction: column; justify-content: center;
+            align-items: center; position: relative; overflow: hidden;
+        }
+        #result-animation-canvas {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1;
+        }
+        #result-text-container {
+            position: relative; z-index: 2; display: flex; flex-direction: column; justify-content: center;
+            align-items: center; width: 100%; height: 100%;
+        }
+        #result-text { 
+            font-family: var(--font-mono); font-size: 2.2em; font-weight: 700; letter-spacing: 2px;
+            color: var(--success-color); text-shadow: 0 0 10px var(--success-color); min-height: 40px;
+        }
+        #secondary-result-text { 
+            font-family: var(--font-primary); font-size: 1.2em; font-weight: 500; color: var(--warning-color);
+            text-shadow: 0 0 8px var(--warning-color); margin-top: 5px; min-height: 20px;
+        }
+        #confidence-score { font-family: var(--font-mono); font-size: 1em; color: var(--secondary-color); opacity: 0; transition: opacity 0.5s; margin-top: 10px;}
+        #probability-panel { display: none; width: 100%; margin-top: 15px; animation: fadeInPanel 0.5s ease-out; position: relative; z-index: 2; }
+        @keyframes fadeInPanel { from { opacity: 0; } to { opacity: 1; } }
+        .prob-item { display: flex; justify-content: space-between; align-items: center; font-size: 0.9em; margin-bottom: 6px; font-family: var(--font-mono); }
+        .prob-bar-outer { flex-grow: 1; height: 10px; background: rgba(0,0,0,0.4); margin: 0 10px; border-radius: 5px; border: 1px solid var(--border-color); }
+        .prob-bar-inner { height: 100%; background: var(--primary-color); border-radius: 3px; transition: width 0.5s; }
+        .prob-value { font-weight: 700; color: var(--primary-color); }
+
+        .right-panel { grid-area: right-panel; }
+        #system-log-container { flex-grow: 1; display: flex; flex-direction: column; min-height: 150px;}
+        #system-log { flex-grow: 1; background: rgba(0,0,0,0.5); border-radius: 5px; padding: 10px; font-family: var(--font-mono); font-size: 0.85em; overflow-y: scroll; border: 1px solid var(--border-color); }
+        #system-log::-webkit-scrollbar { width: 5px; }
+        #system-log::-webkit-scrollbar-track { background: transparent; }
+        #system-log::-webkit-scrollbar-thumb { background: var(--primary-color); border-radius: 5px; }
+        .log-line { white-space: pre-wrap; word-break: break-all; animation: fadeInLog 0.3s; }
+        @keyframes fadeInLog { from { opacity: 0; } to { opacity: 1; } }
+        .log-line.info { color: var(--info-color); } .log-line.warn { color: var(--warning-color); } .log-line.error { color: var(--error-color); } .log-line.success { color: var(--success-color); } .log-line.analysis { color: #c39eff; }
+
+        #roadmap-container { flex-grow: 1; display: flex; flex-direction: column; min-height: 150px; }
+        #roadmap-canvas { width: 100%; height: 100%; background: rgba(0,0,0,0.5); border-radius: 5px; border: 1px solid var(--border-color); }
+
+        /* NEW: Suggestion Box Style */
+        #suggestion-container { padding-bottom: 15px; border-bottom: 1px solid var(--border-color); margin-bottom: 15px; }
+        #suggestion-box { background: rgba(0,0,0,0.5); border: 1px solid var(--border-color); border-radius: 10px; padding: 15px; text-align: center; }
+        #suggested-table-text { font-family: var(--font-mono); font-size: 2em; font-weight: 700; color: var(--warning-color); text-shadow: 0 0 10px var(--warning-color); line-height: 1; }
+        #suggestion-timer-text { font-family: var(--font-mono); font-size: 0.9em; color: var(--secondary-color); margin-top: 8px; }
+
+        .modal-box { 
+            background: var(--container-bg); backdrop-filter: blur(10px); border: 2px solid var(--nuclear-red); border-radius: 15px;
+            padding: 30px; text-align: center; width: 90%; max-width: 480px; z-index: 10; position: relative;
+            box-shadow: 0 0 15px var(--nuclear-red), 0 0 30px var(--nuclear-red), inset 0 0 10px var(--nuclear-red);
+            animation: nuclear-flicker 3s linear infinite;
+        }
+        @keyframes nuclear-flicker {
+            0%, 100% { box-shadow: 0 0 15px var(--nuclear-red), 0 0 30px var(--nuclear-red), inset 0 0 10px var(--nuclear-red); }
+            50% { box-shadow: 0 0 20px var(--nuclear-red), 0 0 40px var(--nuclear-red), inset 0 0 15px var(--nuclear-red); }
+        }
+
+        .modal-box h2 { 
+            color: var(--nuclear-red); margin-top: 0; font-weight: 700; letter-spacing: 3px; font-size: 1.6em;
+            text-shadow: 0 0 5px var(--nuclear-red), 0 0 10px #fff; animation: text-flicker 2s linear infinite;
+        }
+        @keyframes text-flicker {
+            0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% { text-shadow: 0 0 5px var(--nuclear-red), 0 0 10px #fff; opacity: 1; }
+            20%, 24%, 55% { text-shadow: none; opacity: 0.8; }
+        }
+        
+        .modal-input { 
+            width: 100%; background: rgba(0,0,0,0.5); border: 1px solid var(--nuclear-red); color: var(--nuclear-red);
+            padding: 12px 15px; margin: 8px 0; border-radius: 5px; font-size: 1.1em; font-family: var(--font-mono);
+            letter-spacing: normal; text-align: left;
+        }
+        .modal-button { width: 100%; padding: 12px; background: var(--nuclear-red); color: #fff; border: none; border-radius: 5px; font-size: 1.2em; font-weight: 700; cursor: pointer; transition: all 0.3s; letter-spacing: 1px; margin-top: 15px; box-shadow: 0 0 10px var(--nuclear-red); }
+        #login-error { color: var(--error-color); min-height: 20px; font-weight: 700; }
+        
+        #login-notification { color: var(--warning-color); background: rgba(255, 214, 10, 0.1); border: 1px solid var(--warning-color); border-radius: 8px; padding: 10px; margin-bottom: 15px; font-size: 0.9em; font-weight: 500; }
+        #show-instructions-button { background: none; border: none; color: var(--secondary-color); text-decoration: underline; cursor: pointer; margin-top: 15px; font-size: 0.9em; }
+        #instructions-modal .modal-box { text-align: left; }
+        #instructions-modal h2 { text-align: center; margin-bottom: 20px; }
+        #instructions-modal p { margin-bottom: 10px; line-height: 1.6; }
+        #instructions-modal .close-button { position: absolute; top: 15px; right: 15px; background: none; border: none; color: white; font-size: 1.5em; cursor: pointer; }
+        
+        .styled-link { color: var(--warning-color); text-decoration: none; font-weight: bold; border-bottom: 1px dashed var(--warning-color); transition: all 0.2s ease-in-out; }
+        .styled-link:hover { color: #fff; background-color: var(--warning-color); }
+
+        .app-footer { grid-area: footer; text-align: center; padding: 15px 0 5px 0; color: rgba(193, 215, 224, 0.4); font-family: var(--font-mono); font-size: 0.9em; }
+
+        .login-banner {
+            display: block; width: fit-content; margin: 20px auto 0 auto; padding: 10px 25px; border-radius: 8px;
+            background: linear-gradient(45deg, var(--nuclear-red), var(--warning-color)); color: #fff; text-decoration: none;
+            font-weight: 700; letter-spacing: 2px; text-transform: uppercase; box-shadow: 0 0 15px rgba(255, 30, 30, 0.6);
+            transition: all 0.3s ease;
+        }
+        .login-banner:hover { transform: scale(1.05); box-shadow: 0 0 25px rgba(255, 30, 30, 0.8); }
+
+        #lobby-selection-overlay {
+            flex-direction: column; gap: 20px; justify-content: center; align-items: center; perspective: 1200px;
+        }
+        #lobby-title {
+            font-size: 2.5em; font-weight: 700; letter-spacing: 8px; background: var(--prism-gradient);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 0 15px var(--primary-color));
+            text-align: center; transform: translateZ(40px);
+        }
+        #lobby-cards-container {
+            display: flex; gap: 30px; flex-wrap: wrap; justify-content: center; width: 100%; padding: 0 20px;
+            transform-style: preserve-3d; transition: transform 0.5s ease;
+        }
+        #lobby-cards-container:hover { transform: rotateY(5deg) scale(1.02); }
+        
+        .lobby-card {
+            width: 220px; height: 310px; cursor: pointer; position: relative; transform-style: preserve-3d;
+            transition: transform 0.6s ease, box-shadow 0.6s ease; transform: translateZ(20px);
+        }
+        .lobby-card:hover {
+            transform: translateY(-10px) translateZ(50px) rotateY(-15deg) scale(1.05);
+            box-shadow: 0 15px 35px rgba(0, 229, 255, 0.4), 0 0 50px rgba(0, 229, 255, 0.3);
+        }
+        .lobby-card-face {
+            position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 15px;
+            overflow: hidden; display: flex; flex-direction: column; border: 2px solid var(--border-color);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+        }
+        .lobby-card-face.front { transform: rotateY(0deg); }
+        .lobby-card img { width: 100%; height: 100%; object-fit: cover; }
+        .lobby-card-title {
+            text-align: center; font-weight: 700; font-size: 1.1em; letter-spacing: 1px; padding: 12px;
+            color: #fff; background: rgba(0,0,0,0.7); border-top: 2px solid var(--border-color);
+            position: absolute; bottom: 0; width: 100%; backdrop-filter: blur(8px); transition: all 0.3s ease;
+        }
+        .lobby-card:hover .lobby-card-title { background: rgba(0, 229, 255, 0.2); color: var(--primary-color); }
+        
+        @media (max-width: 1200px){.app-container{grid-template-columns:250px 1fr 250px}}
+        @media (max-width: 992px){.app-container{grid-template-columns:1fr 1fr;grid-template-rows:auto auto 1fr auto;grid-template-areas:"header header" "main-panel main-panel" "left-panel right-panel" "footer footer";padding:15px;gap:15px}.main-display-grid{grid-template-columns:1fr;grid-template-rows:minmax(200px, 40vh) auto}#holo-container{min-height:150px}}
+        @media (max-width: 768px){
+            .app-container{grid-template-columns:1fr;grid-template-rows:auto auto auto auto auto;grid-template-areas:"header" "main-panel" "left-panel" "right-panel" "footer"}
+            #lobby-title{font-size:2em}
+            .app-header { justify-content: center; }
+            .right-panel { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+            #roadmap-container { grid-column: span 2; }
+        }
+        @media (max-width: 576px){
+            body{-webkit-text-size-adjust:100%}
+            .app-container{padding: 5px; gap: 8px; grid-template-rows: auto auto auto 1fr auto;}
+            .panel{padding: 10px; gap: 8px;}
+            .app-header h1{font-size: 1.6em; letter-spacing: 3px;}
+            #user-info-panel { width: 100%; justify-content: center; }
+            .panel-title{font-size:1em; padding-bottom: 5px; margin-bottom: 8px;}
+            #core-selector{gap:8px}
+            .core-button span{font-size:0.8em}
+            .main-display-grid{display:block}
+            #camera-view{min-height: 180px; height: 25vh;}
+            #holo-container{display:none}
+            .scan-controls{gap:10px}
+            #result-display{min-height: 120px; padding: 10px;}
+            #result-text{font-size: 1.6em; min-height: 30px;}
+            #scan-button{padding: 10px; font-size: 1.2em;}
+            .right-panel { grid-template-columns: 1fr; }
+            #roadmap-container, #system-log-container { min-height: 120px; }
+            #suggestion-box { padding: 10px; }
+            #suggested-table-text { font-size: 1.5em; }
+            .modal-box{width:95%; padding: 20px;}
+            .modal-input{font-size:1em; letter-spacing: normal;}
+            .lobby-card { width: 80%; max-width: 260px; height: auto; aspect-ratio: 220 / 310; }
+            #lobby-cards-container { gap: 20px; }
+        }
+    </style>
+<style>
+/* === Premium Background (Luxury Gold Aurora) === */
+.bg-premium{
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  background: radial-gradient(1200px 800px at 20% 10%, rgba(255, 215, 128, 0.10), rgba(0,0,0,0)),
+              radial-gradient(1000px 700px at 80% 70%, rgba(176, 0, 32, 0.10), rgba(0,0,0,0)),
+              linear-gradient(180deg, #0a0b0f 0%, #0b0d12 50%, #0a0b0f 100%);
+  overflow:hidden;
+}
+.bg-premium::before, .bg-premium::after{
+  content:"";
+  position:absolute;
+  inset:-20%;
+  filter: blur(60px);
+  mix-blend-mode: screen;
+  pointer-events:none;
+}
+.bg-premium::before{
+  background: radial-gradient(600px 500px at 25% 30%, rgba(255, 225, 160, 0.25), rgba(0,0,0,0)),
+              radial-gradient(800px 600px at 70% 60%, rgba(255, 184, 51, 0.15), rgba(0,0,0,0));
+  animation: premiumFloat1 20s ease-in-out infinite;
+}
+.bg-premium::after{
+  background: radial-gradient(700px 550px at 60% 20%, rgba(255, 240, 200, 0.20), rgba(0,0,0,0)),
+              radial-gradient(500px 400px at 35% 75%, rgba(176, 0, 32, 0.18), rgba(0,0,0,0));
+  animation: premiumFloat2 28s ease-in-out infinite;
+}
+@keyframes premiumFloat1 {
+  0%   { transform: translate3d(0,0,0) rotate(0deg) scale(1); }
+  50%  { transform: translate3d(4%, -3%, 0) rotate(8deg) scale(1.05); }
+  100% { transform: translate3d(0,0,0) rotate(0deg) scale(1); }
+}
+@keyframes premiumFloat2 {
+  0%   { transform: translate3d(0,0,0) rotate(0deg) scale(1); }
+  50%  { transform: translate3d(-3%, 4%, 0) rotate(-6deg) scale(1.07); }
+  100% { transform: translate3d(0,0,0) rotate(0deg) scale(1); }
+}
+
+/* Optional subtle grain overlay */
+.bg-grain{
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: .12;
+  background-image: radial-gradient(rgba(255,255,255,.06) 1px, transparent 1px);
+  background-size: 3px 3px;
+  mix-blend-mode: soft-light;
+}
+
+/* Hide legacy Matrix rain if present */
+canvas#matrix, #matrix, canvas.matrix, .matrix, .matrix-canvas, #matrix-canvas, .matrix-rain {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+}
+</style>
+</head>
+<body>
+    <canvas id="background-canvas"></canvas>
+    
+    <div id="login-overlay" class="modal-overlay">
+        <canvas id="login-canvas"></canvas>
+        <div class="modal-box">
+            <h2>KHU VỰC TRUY CẬP CAO CẤP</h2>
+            <p id="login-error"></p>
+            <div id="login-notification">
+                TOOL CHỈ HOẠT ĐỘNG VỚI CÁC TÀI KHOẢN ĐĂNG KÍ TẠI <a href="http://www.f168.codes" target="_blank" class="styled-link">WWW.F168.CODES</a>
+            </div>
+            <input type="text" id="username-input" class="modal-input" placeholder="NHẬP TÊN TÀI KHOẢN">
+            <input type="password" id="password-input" class="modal-input" placeholder="MẬT KHẨU">
+            <button id="login-button" class="modal-button">ĐĂNG NHẬP</button>
+            <button id="show-instructions-button">Xem Hướng Dẫn</button>
+            <a href="http://www.hackbcr2026.site" target="_blank" class="login-banner">QUAY LẠI CHỌN LÕI A.I</a>
+        </div>
+    </div>
+    
+    <div id="instructions-modal" class="modal-overlay">
+         <div class="modal-box">
+            <button class="close-button" id="close-instructions-button">&times;</button>
+            <h2>HƯỚNG DẪN SỬ DỤNG</h2>
+            <p><strong>BƯỚC 1:</strong> ĐĂNG KÍ TÀI KHOẢN TẠI: <a href="http://www.f168.codes" target="_blank" class="styled-link">WWW.F168.CODES</a></p>
+            <p><strong>BƯỚC 2:</strong> LÊN ĐIỂM CHƠI VÀ CHỤP BILL LẠI GỬI VÀO TELE @LONGBAOF168</p>
+        </div>
+    </div>
+
+    <div id="lobby-selection-overlay" class="modal-overlay">
+        <h2 id="lobby-title">CHỌN SẢNH CHƠI</h2>
+        <div id="lobby-cards-container">
+            <div class="lobby-card" id="select-sexy">
+                <div class="lobby-card-face front">
+                    <img src="https://i.ibb.co/ycn4gVqJ/ae.png" alt="Sảnh Sexy">
+                    <div class="lobby-card-title">QUÉT SẢNH SEXY</div>
+                </div>
+            </div>
+            <div class="lobby-card" id="select-dg">
+                <div class="lobby-card-face front">
+                    <img src="https://i.ibb.co/3m34bdRm/dg.png" alt="Sảnh DG">
+                    <div class="lobby-card-title">QUÉT SẢNH DG</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="app-container">
+        <header class="app-header">
+            <h1>YIAN SCAN</h1>
+            <div id="user-info-panel">
+                <span id="username-display"></span>
+                <button id="back-to-lobby-button" class="header-button">CHỌN LẠI SẢNH</button>
+                <button id="logout-button" class="header-button">ĐĂNG XUẤT</button>
+            </div>
+        </header>
+
+        <div class="left-panel panel">
+            <h2 class="panel-title">LÕI PHÂN TÍCH</h2>
+            <div id="core-selector">
+                <button class="core-button" data-core="yian">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 256 256"><path d="M208,32H48A16,16,0,0,0,32,48V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V48A16,16,0,0,0,208,32Zm0,16V77.37L181.37,104,208,130.63V208H130.63L104,181.37,77.37,208H48V130.63L74.63,104,48,77.37V48H77.37L104,74.63,130.63,48H208Z" opacity="0.2"></path><path d="M208,24H48A24,24,0,0,0,24,48V208a24,24,0,0,0,24,24H208a24,24,0,0,0,24-24V48A24,24,0,0,0,208,24Zm8,184a8,8,0,0,1-8,8H48a8,8,0,0,1-8-8V48a8,8,0,0,1,8-8H208a8,8,0,0,1,8,8ZM112,104a8,8,0,0,1-8-8V80H88a8,8,0,0,1,0-16h24a8,8,0,0,1,8,8v24A8,8,0,0,1,112,104Zm48,64H144a8,8,0,0,1,0-16h16V136a8,8,0,0,1,16,0v24A8,8,0,0,1,160,168Zm-8-48a8,8,0,0,1-8,8H88a8,8,0,0,1,0-16h64A8,8,0,0,1,152,120Z"></path></svg>
+                    <span>YIAN</span>
+                </button>
+                <button class="core-button" data-core="fusion">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 256 256"><path d="M232,128A104,104,0,1,1,128,24,104.11,104.11,0,0,1,232,128Z" opacity="0.2"></path><path d="M128,16a112,112,0,1,0,112,112A112.13,112.13,0,0,0,128,16Zm0,208a96,96,0,1,1,96-96A96.11,96.11,0,0,1,128,224Zm68-100a8,8,0,0,1-8,8H142.48l24.76,24.76a8,8,0,0,1-11.32,11.32L128,140.24,99.08,169.16a8,8,0,0,1-11.32-11.32L113.52,132H68a8,8,0,0,1,0-16h45.52L88.76,91.08A8,8,0,0,1,100.08,80L128,107.76,155.92,80a8,8,0,0,1,11.32,11.31L141.52,116H188A8,8,0,0,1,196,124Z"></path></svg>
+                    <span>FUSION</span>
+                </button>
+                <button class="core-button" data-core="titan">
+                    <!-- Đã chỉnh sửa biểu tượng Titan để tránh lỗi path. Sử dụng hình chữ nhật đơn giản làm biểu tượng -->
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 256 256">
+                        <rect width="200" height="200" x="28" y="28" rx="16" ry="16" opacity="0.2"></rect>
+                        <rect width="160" height="160" x="48" y="48" rx="16" ry="16"></rect>
+                    </svg>
+                    <span>TITAN</span>
+                </button>
+                <button class="core-button" data-core="oracle">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 256 256"><path d="M128,24a104,104,0,1,0,104,104A104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Z" opacity="0.2"></path><path d="M128,16A112,112,0,1,0,240,128,112.13,112.13,0,0,0,128,16Zm0,208a96,96,0,1,1,96-96A96.11,96.11,0,0,1,128,224Zm0-160a64,64,0,1,0,64,64A64.07,64.07,0,0,0,128,64Zm0,112a48,48,0,1,1,48-48A48.05,48.05,0,0,1,128,176Z"></path></svg>
+                    <span>ORACLE</span>
+                </button>
+            </div>
+            <div id="energy-display">
+                <h3 class="panel-title" style="margin-top: 20px; border:none; padding:0; margin-bottom: 5px;">NĂNG LƯỢNG HỆ THỐNG</h3>
+                <div id="energy-bar-outer">
+                    <div id="energy-bar-inner" class="energy-bar-inner"></div>
+                </div>
+                <p id="energy-percent-text">100%</p>
+            </div>
+        </div>
+
+        <div class="main-panel panel">
+            <div class="main-display-grid">
+                <div id="camera-view">
+                    <video id="camera-stream" autoplay playsinline muted></video>
+                    <div id="camera-scanline"></div>
+                    <div id="scan-animation-overlay">
+                        <canvas id="scan-animation-canvas"></canvas>
+                    </div>
+                    <div id="matrix-overlay">
+                        <canvas id="matrix-canvas"></canvas>
+                    </div>
+                </div>
+                <div id="holo-container"></div>
+            </div>
+            <div class="scan-controls">
+                <div id="result-display">
+                    <canvas id="result-animation-canvas"></canvas>
+                    <div id="result-text-container">
+                        <h2 id="result-text"></h2>
+                        <h3 id="secondary-result-text"></h3>
+                    </div>
+                    <p id="confidence-score">ĐỘ TIN CẬY: --%</p>
+                    <div id="probability-panel">
+                        <div class="prob-item"> <span class="prob-label">CÁI</span> <div class="prob-bar-outer"><div id="prob-bar-banker" class="prob-bar-inner"></div></div> <span id="prob-value-banker" class="prob-value">--.--%</span> </div>
+                        <div class="prob-item"> <span class="prob-label">CON</span> <div class="prob-bar-outer"><div id="prob-bar-player" class="prob-bar-inner"></div></div> <span id="prob-value-player" class="prob-value">--.--%</span> </div>
+                        <div class="prob-item"> <span class="prob-label">HÒA</span> <div class="prob-bar-outer"><div id="prob-bar-tie" class="prob-bar-inner"></div></div> <span id="prob-value-tie" class="prob-value">--.--%</span> </div>
+                    </div>
+                </div>
+                <button id="scan-button">KHỞI TẠO QUÉT</button>
+            </div>
+        </div>
+
+        <div class="right-panel panel">
+            <div id="suggestion-container">
+                <h3 class="panel-title">BÀN ĐỀ XUẤT</h3>
+                <div id="suggestion-box">
+                    <p id="suggested-table-text">--</p>
+                    <p id="suggestion-timer-text">Bàn mới trong: 10:00</p>
+                </div>
+            </div>
+            <div id="system-log-container">
+                <h3 class="panel-title">NHẬT KÝ HỆ THỐNG</h3>
+                <div id="system-log"></div>
+            </div>
+            <div id="roadmap-container">
+                <h3 class="panel-title">SƠ ĐỒ LỘ TRÌNH</h3>
+                <canvas id="roadmap-canvas"></canvas>
+            </div>
+        </div>
+        
+        <footer class="app-footer">
+            © Bản quyền thuộc về Long Bảo
+        </footer>
+    </div>
+    
+    <script>
+        // --- PART 0: CONFIG & STATE ---
+        const AI_CORES = { yian: { name: 'YIAN', cost: 5, color: '#00e5ff' }, titan: { name: 'TITAN', cost: 50, color: '#ff6f00' }, oracle: { name: 'ORACLE', cost: 3, color: '#ffd60a' }, fusion: { name: 'FUSION', cost: 60, color: '#c39eff' } };
+        let activeCore = 'yian';
+        let currentUser = null, userEnergy = 100;
+        let isScanning = false;
+        let history = [];
+        let baccaratAnimation = { renderer: null, scene: null, camera: null, reqId: null, cards: [], cardMeshes: [], cardTextures: {}, scannerLaser: null };
+        let matrixAnimationId = null; 
+        let energyListenerUnsubscribe = null;
+        let cameraStream = null;
+        
+        // --- UI & ANIMATION STATE ---
+        let resultAnimationId = null;
+        let resultAnimationState = 'idle'; // 'idle', 'analyzing'
+        let resultAnimCtx = null;
+        let radarAngle = 0;
+        let circuitParticles = [];
+        let textScrambler = null;
+        let suggestionInterval = null;
+        const SUGGESTED_TABLES = ['C15', 'C1', 'C02', 'C03', 'C04', 'C05', 'C06', 'C07', 'C08', 'BCR 1', 'BCR 2', 'BCR 3', 'BCR 5', 'BCR 7'];
+
+        const loginOverlay = document.getElementById('login-overlay');
+        const mainContainer = document.querySelector('.app-container');
+        const lobbyOverlay = document.getElementById('lobby-selection-overlay');
+
+        // --- FIREBASE CONFIG ---
+        const firebaseConfig = {
+          apiKey: "AIzaSyCHDzGbXmHNWKL2UtRm57vPRVxZb31dHto",
+          authDomain: "long-bao-tool-ai.firebaseapp.com",
+          projectId: "long-bao-tool-ai",
+          storageBucket: "long-bao-tool-ai.firebasestorage.app",
+          messagingSenderId: "259613170671",
+          appId: "1:259613170671:web:55291d0b0af4e69052b41a",
+          measurementId: "G-7V7H3JWX7K"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+        
+        // --- AUTH & ENERGY SYNC (MODIFIED) ---
+        async function authenticate(username, password) {
+            const errorEl = document.getElementById('login-error');
+            const loginButton = document.getElementById('login-button');
+            
+            // THAY ĐỔI CHÍNH: Luôn lấy username và gắn đuôi @longbao-tool.ai
+            const emailToAuth = `${username.trim().toLowerCase()}@longbao-tool.ai`;
+
+            errorEl.textContent = "ĐANG XÁC THỰC...";
+            loginButton.disabled = true;
+
+            try {
+                // Sử dụng biến emailToAuth để đăng nhập
+                const userCredential = await auth.signInWithEmailAndPassword(emailToAuth, password);
+                const user = userCredential.user;
+                currentUser = user.email.split('@')[0].toUpperCase();
+                document.getElementById('username-display').textContent = currentUser;
+                syncEnergy(user.uid);
+                loginOverlay.style.display = 'none';
+                lobbyOverlay.style.display = 'flex';
+                errorEl.textContent = "";
+            } catch (error) {
+                console.error("Lỗi Firebase Auth:", error.code, error.message);
+                if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
+                    errorEl.textContent = "TÀI KHOẢN HOẶC MẬT KHẨU KHÔNG ĐÚNG";
+                } else {
+                    errorEl.textContent = "ĐÃ XẢY RA LỖI. VUI LÒNG THỬ LẠI.";
+                }
+                setTimeout(() => errorEl.textContent = "", 3000);
+            } finally {
+                loginButton.disabled = false;
+            }
+        }
+        
+        function syncEnergy(uid) {
+            const userDocRef = db.collection('users').doc(uid);
+            if (energyListenerUnsubscribe) energyListenerUnsubscribe();
+            energyListenerUnsubscribe = userDocRef.onSnapshot((doc) => {
+                if (!doc.exists) {
+                    userDocRef.set({ energy: 100 }).catch(err => console.error("Lỗi tạo dữ liệu:", err));
+                } else {
+                    const newEnergy = doc.data().energy;
+                    if (newEnergy !== undefined && newEnergy !== userEnergy) {
+                         addLogMessage(`Năng lượng cập nhật từ server: ${newEnergy}%`, 'info');
+                         userEnergy = newEnergy;
+                         updateEnergyBar();
+                    }
+                }
+            }, (error) => {
+                console.error("Lỗi lắng nghe năng lượng:", error);
+                addLogMessage('Mất kết nối đồng bộ năng lượng.', 'error');
+            });
+        }
+
+        // --- APP FLOW & INITIALIZATION ---
+        function selectLobby(lobbyName) {
+            lobbyOverlay.style.display = 'none';
+            mainContainer.style.display = 'grid';
+            document.body.style.overflowY = 'auto';
+            initializeApp();
+            addLogMessage(`Đã vào sảnh ${lobbyName}.`, 'info');
+        }
+
+        function initializeApp() {
+            setActiveCore('yian');
+            updateEnergyBar();
+            // Hoãn việc gọi setupCamera() cho tới khi người dùng thực sự khởi động quét.
+            initHolographicScanner();
+            initScanAnimation();
+            initAnalysisTerminal();
+            drawRoadmap();
+            initMatrixAnimation();
+            initResultDisplayAnimation();
+            updateSuggestedTable();
+            startSuggestionTimer();
+        }
+        
+        // --- UI & CORE LOGIC ---
+        function updateEnergyBar() {
+            const energyBarInner = document.getElementById('energy-bar-inner');
+            const energyPercentText = document.getElementById('energy-percent-text');
+            userEnergy = Math.max(0, userEnergy);
+            energyBarInner.style.width = `${userEnergy}%`;
+            energyPercentText.textContent = `${Math.round(userEnergy)}%`;
+            energyBarInner.classList.toggle('low', userEnergy <= 30);
+        }
+
+        function addLogMessage(msg, type = 'info') {
+            const systemLog = document.getElementById('system-log');
+            if (!systemLog) return;
+            const line = document.createElement('div');
+            line.className = `log-line ${type}`;
+            line.textContent = `[${new Date().toLocaleTimeString()}]> ${msg}`;
+            systemLog.appendChild(line);
+            systemLog.scrollTop = systemLog.scrollHeight;
+        }
+
+        function setActiveCore(coreName) {
+            activeCore = coreName;
+            const newColor = AI_CORES[coreName].color;
+            document.documentElement.style.setProperty('--primary-color', newColor);
+            document.documentElement.style.setProperty('--glow-color', `${newColor}bf`);
+            document.querySelectorAll('.core-button').forEach(btn => btn.classList.toggle('active', btn.dataset.core === coreName));
+            addLogMessage(`Lõi hoạt động chuyển thành ${AI_CORES[coreName].name}.`, 'warn');
+        }
+
+        function drawRoadmap() {
+            const canvas = document.getElementById('roadmap-canvas');
+            if(!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const parent = canvas.parentElement;
+            canvas.width = parent.clientWidth; canvas.height = parent.clientHeight;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const beadSize = 12, padding = 10;
+            const cols = Math.floor((canvas.width - padding * 2) / beadSize);
+            const rows = Math.floor((canvas.height - padding * 2) / beadSize);
+            ctx.strokeStyle = 'rgba(0, 229, 255, 0.1)';
+            for(let i=0; i<=cols; i++) { ctx.beginPath(); ctx.moveTo(padding+i*beadSize, padding); ctx.lineTo(padding+i*beadSize, canvas.height-padding); ctx.stroke(); }
+            for(let i=0; i<=rows; i++) { ctx.beginPath(); ctx.moveTo(padding, padding+i*beadSize); ctx.lineTo(canvas.width-padding, padding*i*beadSize); ctx.stroke(); }
+            let currentX = 0, currentY = 0;
+            history.slice(-cols * rows).forEach(result => {
+                const centerX = padding + currentX * beadSize + beadSize / 2;
+                const centerY = padding + currentY * beadSize + beadSize / 2;
+                ctx.beginPath(); ctx.arc(centerX, centerY, beadSize / 2 - 2, 0, 2 * Math.PI);
+                if (result.winner === 'Nhà cái') ctx.fillStyle = '#ff3b3b';
+                else if (result.winner === 'Tay con') ctx.fillStyle = '#00e5ff';
+                else ctx.fillStyle = '#34ffb9';
+                ctx.fill();
+                currentY++;
+                if (currentY >= rows) { currentY = 0; currentX++; }
+            });
+        }
+
+        async function startScanProcess() {
+            if (isScanning) return;
+            const currentCost = AI_CORES[activeCore].cost;
+            if (userEnergy < currentCost) { 
+                addLogMessage("NĂNG LƯỢNG HỆ THỐNG QUÁ THẤP", 'error'); 
+                return; 
+            }
+            
+            const newEnergyLevel = userEnergy - currentCost;
+            const user = auth.currentUser;
+            if (user) {
+                try {
+                    await db.collection('users').doc(user.uid).update({ energy: newEnergyLevel });
+                    addLogMessage(`Đã gửi yêu cầu trừ ${currentCost} năng lượng.`, 'warn');
+                } catch (error) {
+                    // Nếu cập nhật Firestore không thành công (ví dụ thiếu quyền), vẫn tiếp tục quá trình quét và cập nhật năng lượng cục bộ
+                    console.error("Lỗi cập nhật năng lượng:", error);
+                    addLogMessage('Lỗi đồng bộ năng lượng. Sử dụng năng lượng cục bộ.', 'error');
+                    userEnergy = newEnergyLevel;
+                    updateEnergyBar();
+                }
+            } else {
+                // Nếu không đăng nhập Firebase, cập nhật năng lượng cục bộ
+                userEnergy = newEnergyLevel;
+                updateEnergyBar();
+            }
+
+            // Yêu cầu quyền truy cập camera ngay trước khi bắt đầu quét. Nếu camera chưa được bật, kích hoạt.
+            try {
+                // Sử dụng setupCamera() để khởi động camera trước khi quét
+                await setupCamera();
+            } catch (camErr) {
+                console.error('Không thể truy cập camera:', camErr);
+                addLogMessage('Không thể truy cập camera. Hãy cấp quyền cho trình duyệt.', 'error');
+                return;
+            }
+            isScanning = true;
+            const scanButton = document.getElementById('scan-button');
+            scanButton.disabled = true;
+            scanButton.textContent = 'ĐANG PHÂN TÍCH...';
+            
+            document.getElementById('probability-panel').style.display = 'none';
+            document.getElementById('confidence-score').style.opacity = 0;
+            document.getElementById('secondary-result-text').textContent = '';
+            
+            resultAnimationState = 'analyzing';
+            textScrambler.setText('ANALYZING...');
+            
+            let finalResult = generateRandomResult();
+            startCardAnimation(finalResult.winner);
+            startMatrixAnimation(); 
+            addLogMessage(`Quét bắt đầu với lõi ${AI_CORES[activeCore].name}.`, 'info');
+            
+            setTimeout(() => {
+                isScanning = false;
+                scanButton.disabled = false;
+                scanButton.textContent = 'KHỞI TẠO QUÉT';
+                stopCardAnimation();
+                stopMatrixAnimation(); 
+                displayResult(finalResult);
+                addLogMessage(`Kết quả chính: ${finalResult.winner.toUpperCase()}, Phụ: ${finalResult.secondaryWinner.toUpperCase()}`, 'success');
+            }, 4000); 
+        }
+        
+        function generateRandomResult() {
+            const winner = Math.random() < 0.5 ? "Nhà cái" : "Tay con";
+            const secondaryWinner = ["Hoà", "Long Bảo", "Con Đôi", "Cái Đôi"][Math.floor(Math.random() * 4)];
+            let baseBanker = 45.85, basePlayer = 44.62, baseTie = 9.53;
+            let variation = (Math.random() - 0.5) * 2;
+            let probBanker = (baseBanker + variation);
+            let probPlayer = (basePlayer - variation);
+            let probTie = baseTie + (Math.random() - 0.5) * 0.2;
+            const total = probBanker + probPlayer + probTie;
+            return { winner, secondaryWinner, probabilities: { banker: (probBanker/total)*100, player: (probPlayer/total)*100, tie: (probTie/total)*100 } };
+        }
+
+        function displayResult(result) {
+            history.push(result);
+            drawRoadmap();
+            
+            textScrambler.setText(result.winner.toUpperCase()).then(() => {
+                setTimeout(() => {
+                    resultAnimationState = 'idle';
+                }, 1000);
+            });
+
+            document.getElementById('secondary-result-text').textContent = `+ ${result.secondaryWinner.toUpperCase()}`;
+            const confidence = (Math.random() * (99 - 85) + 85).toFixed(2);
+            const confidenceScoreEl = document.getElementById('confidence-score');
+            confidenceScoreEl.textContent = `ĐỘ TIN CẬY: ${confidence}%`;
+            confidenceScoreEl.style.opacity = 1;
+
+            const probs = result.probabilities;
+            document.getElementById('prob-value-banker').textContent = `${probs.banker.toFixed(2)}%`;
+            document.getElementById('prob-bar-banker').style.width = `${probs.banker}%`;
+            document.getElementById('prob-value-player').textContent = `${probs.player.toFixed(2)}%`;
+            document.getElementById('prob-bar-player').style.width = `${probs.player}%`;
+            document.getElementById('prob-value-tie').textContent = `${probs.tie.toFixed(2)}%`;
+            document.getElementById('prob-bar-tie').style.width = `${probs.tie}%`;
+            document.getElementById('probability-panel').style.display = 'block';
+        }
+
+        function stopCamera() {
+            if (cameraStream) {
+                cameraStream.getTracks().forEach(track => track.stop());
+                cameraStream = null;
+            }
+        }
+
+        // --- EVENT LISTENERS ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // -- INTEGRATED LOGIN HANDLING --
+            // Trong phiên bản tích hợp với hackbcr2026, chúng ta bỏ qua màn hình đăng nhập.
+            // Các trường và nút của màn hình đăng nhập vẫn tồn tại trong DOM để tránh lỗi script,
+            // nhưng chúng ta không gán bất kỳ sự kiện nào vào chúng.
+
+            // Thiết lập sự kiện logout và back to lobby để dừng camera và hiển thị lại màn chọn sảnh
+            const logoutButton = document.getElementById('logout-button');
+            const backToLobbyButton = document.getElementById('back-to-lobby-button');
+            logoutButton.addEventListener('click', () => {
+                stopCamera();
+                if (energyListenerUnsubscribe) { energyListenerUnsubscribe(); energyListenerUnsubscribe = null; }
+                if (suggestionInterval) clearInterval(suggestionInterval);
+                // Không gọi auth.signOut(), vì chúng ta không sử dụng đăng nhập trong phiên bản tích hợp
+                mainContainer.style.display = 'none';
+                lobbyOverlay.style.display = 'flex';
+                document.body.style.overflowY = 'hidden';
+                currentUser = null;
+                document.getElementById('username-display').textContent = '';
+            });
+            backToLobbyButton.addEventListener('click', () => {
+                stopCamera();
+                mainContainer.style.display = 'none';
+                lobbyOverlay.style.display = 'flex';
+                document.body.style.overflowY = 'hidden';
+            });
+
+            // Sự kiện cho nút quét và lựa chọn lõi
+            document.getElementById('scan-button').addEventListener('click', startScanProcess);
+            document.querySelectorAll('.core-button').forEach(button => button.addEventListener('click', (e) => setActiveCore(e.currentTarget.dataset.core)));
+            
+            // Sự kiện hiển thị hướng dẫn
+            const instructionsModal = document.getElementById('instructions-modal');
+            const showInstructionsButton = document.getElementById('show-instructions-button');
+            if (showInstructionsButton) {
+                showInstructionsButton.addEventListener('click', () => { instructionsModal.style.display = 'flex'; });
+            }
+            document.getElementById('close-instructions-button').addEventListener('click', () => { instructionsModal.style.display = 'none'; });
+            instructionsModal.addEventListener('click', (e) => { if (e.target === instructionsModal) { instructionsModal.style.display = 'none'; } });
+
+            // Sự kiện chọn sảnh chơi
+            document.getElementById('select-sexy').addEventListener('click', () => selectLobby('SEXY'));
+            document.getElementById('select-dg').addEventListener('click', () => selectLobby('DG'));
+
+            // Lấy tham số username và energy truyền từ hackbcr2026 thông qua URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const passedUser = urlParams.get('username');
+            const passedEnergy = urlParams.get('energy');
+            // Nếu có tham số username và energy, sử dụng để đặt người dùng hiện tại
+            if (passedUser) {
+                currentUser = passedUser.toUpperCase();
+            } else {
+                currentUser = 'USER';
+            }
+            if (passedEnergy && !isNaN(parseFloat(passedEnergy))) {
+                userEnergy = parseFloat(passedEnergy);
+            }
+            // Hiển thị tên người dùng và cập nhật thanh năng lượng
+            document.getElementById('username-display').textContent = currentUser;
+            updateEnergyBar();
+            // Luôn bỏ qua màn hình đăng nhập và màn chọn sảnh: hiển thị thẳng ứng dụng
+            loginOverlay.style.display = 'none';
+            lobbyOverlay.style.display = 'none';
+            // Hiển thị giao diện chính và cho phép cuộn
+            mainContainer.style.display = 'grid';
+            document.body.style.overflowY = 'auto';
+            // Khởi tạo các thành phần chính của ứng dụng
+            initializeApp();
+            // Khởi tạo nền grid phía sau
+            initBackgroundGrid();
+        });
+
+        // --- ANIMATION & VISUALS ---
+        async function setupCamera() { 
+            const videoElement = document.getElementById('camera-stream');
+            if (!videoElement) return;
+            try { 
+                cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } }); 
+                videoElement.srcObject = cameraStream; 
+            } catch (err) { 
+                addLogMessage("Lỗi truy cập camera. Sử dụng hình ảnh giả lập.", "error");
+            } 
+        }
+        
+        function initHolographicScanner() {
+            const container = document.getElementById('holo-container');
+            if (!container || container.querySelector('canvas') || window.innerWidth <= 576) return;
+            let scene = new THREE.Scene();
+            let camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
+            camera.position.z = 4;
+            let renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            container.appendChild(renderer.domElement);
+            const group = new THREE.Group();
+            scene.add(group);
+            const sphereGeom = new THREE.IcosahedronGeometry(1.2, 2);
+            const sphereMat = new THREE.MeshStandardMaterial({ color: '#00e5ff', metalness: 0.6, roughness: 0.1, emissive: '#00e5ff', emissiveIntensity: 0.4, transparent: true, opacity: 0.6 });
+            let holoSphere = new THREE.Mesh(sphereGeom, sphereMat);
+            group.add(holoSphere);
+            const wireframeGeom = new THREE.IcosahedronGeometry(1.21, 2);
+            const wireframeMat = new THREE.MeshBasicMaterial({ color: '#00e5ff', wireframe: true, transparent: true, opacity: 0.2 });
+            group.add(new THREE.Mesh(wireframeGeom, wireframeMat));
+            scene.add(new THREE.DirectionalLight(0xffffff, 1.5));
+            scene.add(new THREE.AmbientLight(0xffffff, 0.3));
+            let isDragging = false, previousMousePosition = { x: 0, y: 0 };
+            container.addEventListener('mousedown', () => isDragging = true);
+            container.addEventListener('mouseup', () => isDragging = false);
+            container.addEventListener('mouseleave', () => isDragging = false);
+            container.addEventListener('mousemove', e => { if (!isDragging) return; const deltaMove = { x: e.offsetX - previousMousePosition.x, y: e.offsetY - previousMousePosition.y }; group.rotation.y += deltaMove.x * 0.01; group.rotation.x += deltaMove.y * 0.01; previousMousePosition = { x: e.offsetX, y: e.offsetY }; });
+            const clock = new THREE.Clock();
+            function animate() { requestAnimationFrame(animate); const elapsedTime = clock.getElapsedTime(); if (!isDragging) { group.rotation.y += 0.005; group.rotation.x += 0.002; } if(isScanning) { group.rotation.y += 0.05; holoSphere.material.emissiveIntensity = Math.sin(elapsedTime * 15) * 0.5 + 0.8; } else { holoSphere.material.emissiveIntensity = 0.4; } renderer.render(scene, camera); }
+            animate();
+        }
+
+        const BaccaratGame = {
+            deck: [], ranks: ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'], suits: ['♥', '♦', '♣', '♠'],
+            createDeck() { this.deck = []; for (const suit of this.suits) { for (const rank of this.ranks) { this.deck.push({ rank, suit }); } } },
+            shuffleDeck() { for (let i = this.deck.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [this.deck[i], this.deck[j]] = [this.deck[j], this.deck[i]]; } },
+            getCardValue(rank) { if (['10', 'J', 'Q', 'K'].includes(rank)) return 0; if (rank === 'A') return 1; return parseInt(rank); },
+            getHandScore(hand) { return hand.reduce((sum, card) => sum + this.getCardValue(card.rank), 0) % 10; },
+            dealHand() { this.createDeck(); this.shuffleDeck(); let playerHand = [this.deck.pop(), this.deck.pop()], bankerHand = [this.deck.pop(), this.deck.pop()]; let playerScore = this.getHandScore(playerHand), bankerScore = this.getHandScore(bankerHand); if (playerScore < 8 && bankerScore < 8) { let playerDraws = false; if (playerScore <= 5) { playerHand.push(this.deck.pop()); playerDraws = true; } const playerThirdCardValue = playerHand.length > 2 ? this.getCardValue(playerHand[2].rank) : -1; if (playerDraws) { if (bankerScore <= 2 || (bankerScore === 3 && playerThirdCardValue !== 8) || (bankerScore === 4 && [2,3,4,5,6,7].includes(playerThirdCardValue)) || (bankerScore === 5 && [4,5,6,7].includes(playerThirdCardValue)) || (bankerScore === 6 && [6,7].includes(playerThirdCardValue))) { bankerHand.push(this.deck.pop()); } } else if (bankerScore <= 5) { bankerHand.push(this.deck.pop()); } } playerScore = this.getHandScore(playerHand); bankerScore = this.getHandScore(bankerHand); let winner; if (playerScore > bankerScore) winner = "Tay con"; else if (bankerScore > playerScore) winner = "Nhà cái"; else winner = "Hoà"; return { playerHand, bankerHand, winner }; },
+            generateHandForWinner(targetWinner) { let hand; let attempts = 0; do { hand = this.dealHand(); attempts++; } while (hand.winner !== targetWinner && attempts < 100); return hand; }
+        };
+        
+        function createCardTexture(card) {
+            const canvas = document.createElement('canvas');
+            const canvasWidth = 200, canvasHeight = 280;
+            canvas.width = canvasWidth; canvas.height = canvasHeight;
+            const ctx = canvas.getContext('2d');
+            const primaryColor = AI_CORES[activeCore].color || '#00e5ff';
+            ctx.fillStyle = 'rgba(10, 25, 40, 0.6)'; ctx.beginPath(); ctx.roundRect(0, 0, canvasWidth, canvasHeight, [15]); ctx.fill();
+            ctx.strokeStyle = primaryColor; ctx.lineWidth = 4; ctx.shadowColor = primaryColor; ctx.shadowBlur = 15;
+            ctx.beginPath(); ctx.roundRect(2, 2, canvasWidth-4, canvasHeight-4, [13]); ctx.stroke();
+            ctx.shadowBlur = 0; ctx.fillStyle = primaryColor; ctx.textAlign = 'center';
+            ctx.font = 'bold 50px Rajdhani'; ctx.fillText(card.rank, 40, 60);
+            ctx.font = 'bold 110px Rajdhani'; ctx.fillText(card.suit, canvasWidth / 2, canvasHeight / 2 + 35);
+            return new THREE.CanvasTexture(canvas);
+        }
+
+        function initScanAnimation() {
+            const container = document.getElementById('scan-animation-overlay'); const canvas = document.getElementById('scan-animation-canvas'); if (!container || !canvas) return;
+            baccaratAnimation.scene = new THREE.Scene(); baccaratAnimation.camera = new THREE.PerspectiveCamera(75, 16 / 9, 0.1, 1000); baccaratAnimation.camera.position.z = 8;
+            baccaratAnimation.renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true }); baccaratAnimation.renderer.setPixelRatio(window.devicePixelRatio);
+            baccaratAnimation.scene.add(new THREE.AmbientLight(0xffffff, 1.5));
+            const dirLight = new THREE.DirectionalLight(0xffffff, 1); dirLight.position.set(5, 10, 7.5); baccaratAnimation.scene.add(dirLight);
+            const laserGeom = new THREE.PlaneGeometry(20, 0.15); const laserMat = new THREE.MeshBasicMaterial({ color: 0x00e5ff, transparent: true, opacity: 0.8, blending: THREE.AdditiveBlending, depthWrite: false });
+            baccaratAnimation.scannerLaser = new THREE.Mesh(laserGeom, laserMat); baccaratAnimation.scannerLaser.position.z = 1; baccaratAnimation.scannerLaser.visible = false; baccaratAnimation.scene.add(baccaratAnimation.scannerLaser);
+        }
+
+        function startCardAnimation(winner) {
+            const overlay = document.getElementById('scan-animation-overlay'); const container = document.getElementById('camera-view'); overlay.style.display = 'flex';
+            if (baccaratAnimation.renderer) { const width = container.clientWidth; const height = container.clientHeight; baccaratAnimation.renderer.setSize(width, height); baccaratAnimation.camera.aspect = width / height; baccaratAnimation.camera.updateProjectionMatrix(); }
+            if (baccaratAnimation.reqId) cancelAnimationFrame(baccaratAnimation.reqId);
+            baccaratAnimation.cardMeshes.forEach(mesh => baccaratAnimation.scene.remove(mesh));
+            baccaratAnimation.cardMeshes = [];
+            const primaryColor = AI_CORES[activeCore].color;
+            baccaratAnimation.scannerLaser.material.color.set(primaryColor);
+            const hand = BaccaratGame.generateHandForWinner(winner);
+            const cardWidth = 2.5, cardHeight = cardWidth * 1.4; const cardGeom = new THREE.PlaneGeometry(cardWidth, cardHeight, 5, 7);
+            const createCardMesh = (cardData) => {
+                const frontMat = new THREE.MeshStandardMaterial({ map: createCardTexture(cardData), side: THREE.DoubleSide, transparent: true, roughness: 0.3, metalness: 0.2, emissive: new THREE.Color(primaryColor), emissiveIntensity: 0.4 });
+                const backMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(primaryColor), wireframe: true, transparent: true, opacity: 0.6 });
+                const group = new THREE.Group(); const back = new THREE.Mesh(cardGeom, backMat); const front = new THREE.Mesh(cardGeom, frontMat); front.rotation.y = Math.PI; group.add(back); group.add(front); return group;
+            };
+            [...hand.playerHand, ...hand.bankerHand].forEach((cardData) => { const cardMesh = createCardMesh(cardData); cardMesh.visible = false; baccaratAnimation.scene.add(cardMesh); baccaratAnimation.cardMeshes.push(cardMesh); });
+            const clock = new THREE.Clock();
+            const duration = 4.0; const scanEndTime = 0.8, dealEndTime = scanEndTime + 1.0, flipEndTime = dealEndTime + 0.8, thirdCardDealEndTime = flipEndTime + 0.6;
+            const viewHeight = 12; baccaratAnimation.scannerLaser.position.y = viewHeight / 2; baccaratAnimation.scannerLaser.visible = true;
+            function animate() {
+                baccaratAnimation.reqId = requestAnimationFrame(animate); const elapsedTime = clock.getElapsedTime();
+                if (elapsedTime < scanEndTime) { const scanProgress = elapsedTime / scanEndTime; baccaratAnimation.scannerLaser.position.y = (viewHeight / 2) - (scanProgress * viewHeight); baccaratAnimation.scannerLaser.material.opacity = Math.sin(scanProgress * Math.PI); } else { baccaratAnimation.scannerLaser.visible = false; }
+                if (elapsedTime > scanEndTime && elapsedTime < dealEndTime) { const dealProgress = (elapsedTime - scanEndTime) / (dealEndTime - scanEndTime); const positions = [{ x: -3, y: 0, z: 0 }, { x: 3, y: 0, z: 0 }, { x: -1.5, y: 0, z: 0 }, { x: 1.5, y: 0, z: 0 }]; baccaratAnimation.cardMeshes.slice(0, 4).forEach((cm, i) => { if (cm) { cm.visible = true; cm.position.x = positions[i].x; cm.position.z = positions[i].z; cm.position.y = 5 * (1 - Math.min(1, dealProgress * 4 - i * 0.4)); } }); }
+                if (elapsedTime > dealEndTime && elapsedTime < flipEndTime) { const flipProgress = (elapsedTime - dealEndTime) / (flipEndTime - dealEndTime); for (let i = 0; i < 4; i++) { if (baccaratAnimation.cardMeshes[i]) { baccaratAnimation.cardMeshes[i].rotation.y = Math.PI * Math.min(1, flipProgress * 4 - i * 0.5); } } }
+                if (elapsedTime > flipEndTime && elapsedTime < thirdCardDealEndTime) { const thirdCardProgress = (elapsedTime - flipEndTime) / (thirdCardDealEndTime - flipEndTime); const playerHasThird = hand.playerHand.length > 2; if (playerHasThird && baccaratAnimation.cardMeshes[4]) { baccaratAnimation.cardMeshes[4].visible = true; baccaratAnimation.cardMeshes[4].position.set(-4.5, 0, 0); baccaratAnimation.cardMeshes[4].position.y = 5 * (1 - thirdCardProgress); } if (hand.bankerHand.length > 2) { const idx = playerHasThird ? 5 : 4; if (baccaratAnimation.cardMeshes[idx]) { baccaratAnimation.cardMeshes[idx].visible = true; baccaratAnimation.cardMeshes[idx].position.set(4.5, 0, 0); baccaratAnimation.cardMeshes[idx].position.y = 5 * (1 - thirdCardProgress); } } }
+                if (elapsedTime > thirdCardDealEndTime) { const finalFlipProgress = (elapsedTime - thirdCardDealEndTime) / (duration - thirdCardDealEndTime); const playerHasThird = hand.playerHand.length > 2; if (playerHasThird && baccaratAnimation.cardMeshes[4]) { baccaratAnimation.cardMeshes[4].rotation.y = Math.PI * Math.min(1, finalFlipProgress * 2); } if (hand.bankerHand.length > 2) { const idx = playerHasThird ? 5 : 4; if (baccaratAnimation.cardMeshes[idx]) { baccaratAnimation.cardMeshes[idx].rotation.y = Math.PI * Math.min(1, finalFlipProgress * 2); } } }
+                baccaratAnimation.renderer.render(baccaratAnimation.scene, baccaratAnimation.camera);
+            }
+            animate();
+        }
+
+        function stopCardAnimation() {
+            document.getElementById('scan-animation-overlay').style.display = 'none';
+            if (baccaratAnimation.reqId) { cancelAnimationFrame(baccaratAnimation.reqId); baccaratAnimation.reqId = null; }
+            if (baccaratAnimation.scannerLaser) { baccaratAnimation.scannerLaser.visible = false; }
+        }
+        
+        const ENVIRONMENTAL_LOGS = [ { type: 'info', text: 'Hiệu chỉnh cảm biến...' }, { type: 'warn', text: 'Ma trận xác suất dao động...' }, { type: 'analysis', text: 'Ghi nhận thiết bị trong phạm vi.'}, { type: 'info', text: 'Chờ lệnh...' } ];
+        function initAnalysisTerminal() { 
+            addLogMessage('YIAN A.I CORE v21.5 online.', 'success'); 
+            setInterval(() => { const randomMsg = ENVIRONMENTAL_LOGS[Math.floor(Math.random() * ENVIRONMENTAL_LOGS.length)]; addLogMessage(randomMsg.text, randomMsg.type); }, 8000); 
+        }
+        
+        function initBackgroundGrid() {
+            const canvas = document.getElementById('background-canvas'); if (!canvas) return;
+            const scene = new THREE.Scene(); const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 1000); camera.position.set(0, 20, 0); camera.lookAt(scene.position);
+            const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true }); renderer.setSize(window.innerWidth, window.innerHeight); renderer.setPixelRatio(window.devicePixelRatio);
+            const gridColor = new THREE.Color(getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim());
+            const grid = new THREE.GridHelper(200, 40, gridColor, gridColor); grid.material.opacity = 0.2; grid.material.transparent = true; scene.add(grid);
+            const clock = new THREE.Clock();
+            function animate() { requestAnimationFrame(animate); grid.position.z = (clock.getElapsedTime() * 2) % 10; renderer.render(scene, camera); }
+            window.addEventListener('resize', () => { camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); });
+            animate();
+        }
+
+        function initMatrixAnimation() {
+            const canvas = document.getElementById('matrix-canvas'); if(!canvas) return;
+            let ctx = canvas.getContext('2d');
+            const container = canvas.parentElement.parentElement;
+            canvas.width = container.clientWidth; canvas.height = container.clientHeight;
+            const characters = 'YIAN01'; const fontSize = 14;
+            let cols = Math.floor(canvas.width / fontSize); let drops = [];
+            for(let i = 0; i < cols; i++) { drops[i] = 1; }
+            function draw() {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.05)'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--primary-color');
+                ctx.font = `${fontSize}px ${getComputedStyle(document.documentElement).getPropertyValue('--font-mono')}`;
+                for(let i = 0; i < cols; i++) {
+                    let text = characters[Math.floor(Math.random() * characters.length)];
+                    ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+                    if(drops[i] * fontSize > canvas.height && Math.random() > 0.975) { drops[i] = 0; }
+                    drops[i]++;
+                }
+            }
+            window.startMatrixAnimation = () => { document.getElementById('matrix-overlay').style.display = 'block'; if(matrixAnimationId) cancelAnimationFrame(matrixAnimationId); (function loop(){ draw(); matrixAnimationId = requestAnimationFrame(loop); })(); }
+            window.stopMatrixAnimation = () => { document.getElementById('matrix-overlay').style.display = 'none'; if(matrixAnimationId) cancelAnimationFrame(matrixAnimationId); matrixAnimationId = null; }
+        }
+
+        // --- NEW & UPDATED FUNCTIONS ---
+        function updateSuggestedTable() {
+            const tableTextEl = document.getElementById('suggested-table-text');
+            if (!tableTextEl) return;
+            const randomIndex = Math.floor(Math.random() * SUGGESTED_TABLES.length);
+            const newTable = SUGGESTED_TABLES[randomIndex];
+            tableTextEl.textContent = newTable;
+            addLogMessage(`Hệ thống đề xuất bàn: ${newTable}`, 'analysis');
+        }
+
+        function startSuggestionTimer() {
+            const timerTextEl = document.getElementById('suggestion-timer-text');
+            if (!timerTextEl) return;
+            if (suggestionInterval) clearInterval(suggestionInterval);
+            let duration = 10 * 60;
+            const timer = () => {
+                let minutes = parseInt(duration / 60, 10);
+                let seconds = parseInt(duration % 60, 10);
+                minutes = minutes < 10 ? "0" + minutes : minutes;
+                seconds = seconds < 10 ? "0" + seconds : seconds;
+                timerTextEl.textContent = `Bàn mới trong: ${minutes}:${seconds}`;
+                if (--duration < 0) {
+                    duration = 10 * 60;
+                    updateSuggestedTable();
+                }
+            };
+            timer();
+            suggestionInterval = setInterval(timer, 1000);
+        }
+
+        class TextScramble {
+            constructor(el) { this.el = el; this.chars = '!<>-_\\/[]{}—=+*^?#________'; this.update = this.update.bind(this); }
+            setText(newText) {
+                const oldText = this.el.innerText;
+                const length = Math.max(oldText.length, newText.length);
+                const promise = new Promise((resolve) => this.resolve = resolve);
+                this.queue = [];
+                for (let i = 0; i < length; i++) {
+                    const from = oldText[i] || ''; const to = newText[i] || '';
+                    const start = Math.floor(Math.random() * 40); const end = start + Math.floor(Math.random() * 40);
+                    this.queue.push({ from, to, start, end });
+                }
+                cancelAnimationFrame(this.frameRequest); this.frame = 0; this.update(); return promise;
+            }
+            update() {
+                let output = ''; let complete = 0;
+                for (let i = 0, n = this.queue.length; i < n; i++) {
+                    let { from, to, start, end, char } = this.queue[i];
+                    if (this.frame >= end) { complete++; output += to; } 
+                    else if (this.frame >= start) {
+                        if (!char || Math.random() < 0.28) { char = this.randomChar(); this.queue[i].char = char; }
+                        output += `<span class="scramble-char">${char}</span>`;
+                    } else { output += from; }
+                }
+                this.el.innerHTML = output;
+                if (complete === this.queue.length) { this.resolve(); } 
+                else { this.frameRequest = requestAnimationFrame(this.update); this.frame++; }
+            }
+            randomChar() { return this.chars[Math.floor(Math.random() * this.chars.length)]; }
+        }
+
+        function initResultDisplayAnimation() {
+            const canvas = document.getElementById('result-animation-canvas');
+            const resultTextEl = document.getElementById('result-text');
+            if(!canvas || !resultTextEl) return;
+            resultAnimCtx = canvas.getContext('2d');
+            textScrambler = new TextScramble(resultTextEl);
+            const resize = () => {
+                const display = document.getElementById('result-display');
+                canvas.width = display.clientWidth;
+                canvas.height = display.clientHeight;
+            };
+            window.addEventListener('resize', resize);
+            resize();
+            startResultAnimationLoop();
+            textScrambler.setText('HỆ THỐNG SẴN SÀNG');
+        }
+
+        function startResultAnimationLoop() {
+            if (resultAnimationId) cancelAnimationFrame(resultAnimationId);
+            const loop = () => {
+                const pColor = getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim();
+                const gColor = getComputedStyle(document.documentElement).getPropertyValue('--glow-color').trim();
+                resultAnimCtx.clearRect(0, 0, resultAnimCtx.canvas.width, resultAnimCtx.canvas.height);
+                if (resultAnimationState === 'idle') { drawRadar(resultAnimCtx, pColor, gColor); } 
+                else if (resultAnimationState === 'analyzing') { drawCircuits(resultAnimCtx, pColor, gColor); }
+                resultAnimationId = requestAnimationFrame(loop);
+            };
+            loop();
+        }
+
+        function drawRadar(ctx, pColor, gColor) {
+            const centerX = ctx.canvas.width / 2; const centerY = ctx.canvas.height / 2;
+            const radius = Math.min(centerX, centerY) * 0.7;
+            ctx.strokeStyle = pColor; ctx.lineWidth = 1; ctx.globalAlpha = 0.3;
+            for (let i = 1; i <= 4; i++) { ctx.beginPath(); ctx.arc(centerX, centerY, radius * (i / 4), 0, 2 * Math.PI); ctx.stroke(); }
+            ctx.globalAlpha = 1;
+            radarAngle += 0.03;
+            const gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, radius);
+            gradient.addColorStop(0, 'rgba(0,0,0,0)'); gradient.addColorStop(0.8, gColor.replace('0.75', '0.1')); gradient.addColorStop(1, gColor.replace('0.75', '0.5'));
+            ctx.save(); ctx.translate(centerX, centerY); ctx.rotate(radarAngle);
+            ctx.beginPath(); ctx.moveTo(0, 0); ctx.arc(0, 0, radius, 0, Math.PI / 3); ctx.closePath();
+            ctx.fillStyle = gradient; ctx.fill(); ctx.restore();
+        }
+
+        function drawCircuits(ctx, pColor, gColor) {
+            if (Math.random() > 0.85 && circuitParticles.length < 50) {
+                circuitParticles.push(new CircuitParticle(ctx.canvas.width, ctx.canvas.height, pColor));
+            }
+            for (let i = circuitParticles.length - 1; i >= 0; i--) {
+                const p = circuitParticles[i]; p.update(); p.draw(ctx);
+                if (p.life <= 0) { circuitParticles.splice(i, 1); }
+            }
+        }
+        
+        class CircuitParticle {
+            constructor(w, h, color) {
+                this.x = Math.random() * w; this.y = Math.random() * h;
+                this.vx = (Math.random() - 0.5) * 2; this.vy = (Math.random() - 0.5) * 2;
+                this.life = Math.random() * 50 + 50; this.initialLife = this.life;
+                this.size = Math.random() * 2 + 1; this.color = color;
+            }
+            update() { this.x += this.vx; this.y += this.vy; this.life--; }
+            draw(ctx) {
+                ctx.globalAlpha = this.life / this.initialLife; ctx.fillStyle = this.color;
+                ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, 2 * Math.PI); ctx.fill();
+                ctx.globalAlpha = 1;
+            }
+        }
+
+    </script>
+</body>
+</html>

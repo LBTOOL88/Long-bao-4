@@ -1,0 +1,8 @@
+/* Build me with:
+   npx tailwindcss -c tailwind.config.js -i ./tailwind.input.css -o ./tailwind.css --minify
+*/
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Place for tiny custom utilities if needed */
