@@ -59,3 +59,32 @@ body {
 }
 /* ===== END FIX OVERLAP ===== */
 
+/* ===== FIX CORE SELECTOR CROPPING (2025-08-10) ===== */
+/* Active card is scaled up, so let the container breathe and avoid clipping */
+#core-selector-container{
+  height: clamp(420px, 62vh, 560px) !important;
+  overflow: visible !important; /* allow scaled card to show fully */
+}
+
+/* Slightly reduce active scale to fit smaller viewports better */
+.core-card.active{
+  transform: translateX(0) scale(1.06) !important;
+}
+
+/* Ensure description can wrap and is visible */
+.core-card { 
+  overflow: visible !important;
+}
+
+/* Mobile tweaks */
+@media (max-width: 640px){
+  #core-selector-container{
+    height: clamp(380px, 65vh, 520px) !important;
+  }
+  .core-card{
+    width: 260px !important;
+    height: 350px !important; /* keep readable proportions */
+  }
+}
+/* ===== END FIX ===== */
+
