@@ -3,16 +3,22 @@
 <head>
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
     <title>SIÊU TOOL A.I WIN 100%</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@400;700&family=Roboto:wght@400;700&family=Rajdhani:wght@400;700&family=Fira+Code:wght@400;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
     
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
-
-    <!-- BỔ SUNG: Liên kết đến tệp CSS tùy chỉnh và manifest PWA -->
+    <!-- Tailwind runtime (Play CDN) - KEEP as fallback during development -->
+<script src="https://cdn.tailwindcss.com"></script>
+<!-- SWAP_TAILWIND_STATIC:
+     After running `npm run build:css` (or the npx command),
+     replace the CDN script above with the line below and remove this comment:
+     <link rel="stylesheet" href="tailwind.css">
+-->
+    <!-- lazy: Tone.js will be loaded on first user gesture -->
+<!-- BỔ SUNG: Liên kết đến tệp CSS tùy chỉnh và manifest PWA -->
     <link rel="stylesheet" href="style.css" />
     <link rel="manifest" href="manifest.json" />
     <meta name="theme-color" content="#00e6e6" />
@@ -1653,7 +1659,7 @@ canvas#matrix, #matrix, canvas.matrix, .matrix, .matrix-canvas, #matrix-canvas, 
         <div id="auth-content">
             <div class="corner-bracket top-left"></div> <div class="corner-bracket top-right"></div>
             <div class="corner-bracket bottom-left"></div> <div class="corner-bracket bottom-right"></div>
-            <img id="auth-logo" class="boot-anim" src="https://i.ibb.co/RkhcqgKC/LOGO.png" alt="Logo" style="animation-delay: 0.2s;">
+            <img id="auth-logo" class="boot-anim" src="https://i.ibb.co/RkhcqgKC/LOGO.png" alt="Logo" style="animation-delay: 0.2s;" loading="lazy" decoding="async" fetchpriority="low">
             <div id="form-container">
                 <form id="loginForm">
                     <h2 data-text="ĐĂNG NHẬP"></h2>
@@ -1665,7 +1671,7 @@ canvas#matrix, #matrix, canvas.matrix, .matrix, .matrix-canvas, #matrix-canvas, 
                     <!-- Download app banner: provides a prominent call to action for users to install the companion app. -->
                     <a href="https://limewire.com/d/H8Mto#c8FLyO73zq" target="_blank" class="download-banner boot-anim" style="animation-delay: 1.6s;">
                         <!-- Add a Google Play icon so users can immediately recognise the download action -->
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Google_Play_2022_logo.svg/512px-Google_Play_2022_logo.svg.png" alt="Google Play" style="height: 20px; width: auto; margin-right: 8px;" />
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Google_Play_2022_logo.svg/512px-Google_Play_2022_logo.svg.png" alt="Google Play" style="height: 20px; width: auto; margin-right: 8px;" / loading="lazy" decoding="async" fetchpriority="low" width="512">
                         <span>TẢI APP NGAY</span>
                     </a>
                 </form>
@@ -1685,7 +1691,7 @@ canvas#matrix, #matrix, canvas.matrix, .matrix, .matrix-canvas, #matrix-canvas, 
             <div id="user-info-bar" class="hidden">
                 <!-- Left side: Avatar, pilot info and energy -->
                 <div id="user-info-left">
-                    <img id="user-avatar" src="https://placehold.co/50x50/0A192F/00ffff?text=P" alt="User Avatar">
+                    <img id="user-avatar" src="https://placehold.co/50x50/0A192F/00ffff?text=P" alt="User Avatar" loading="lazy" decoding="async" fetchpriority="low" width="50" height="50">
                     <div>
                         <span id="user-pilot">PILOT:</span><span id="user-level" style="margin-left:6px;"></span><br>
                         <span id="user-energy">ENERGY:</span>
@@ -1743,7 +1749,7 @@ canvas#matrix, #matrix, canvas.matrix, .matrix, .matrix-canvas, #matrix-canvas, 
                     <button id="exit-longbao-btn-tables" class="box-panel p-2 rounded-md hover:bg-slate-700 transition-colors z-50 text-white">Thoát Lõi</button>
                     <h1 class="text-2xl sm:text-4xl font-bold text-center text-[var(--neon-green)] glow-text-gold tracking-widest box-panel py-2 px-4">CHỌN BÀN CHƠI</h1>
                     <div style="width: 80px;"></div> </div>
-                <div id="table-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div id="table-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 cv-auto">
                     </div>
             </div>
         </div>
@@ -1789,7 +1795,7 @@ canvas#matrix, #matrix, canvas.matrix, .matrix, .matrix-canvas, #matrix-canvas, 
                     </div>
                     <div id="bet-options-grid" class="box-panel p-2 sm:p-3 space-y-2">
                         </div>
-                    <div id="history-grid" class="history-grid box-panel"></div>
+                    <div id="history-grid" class="history-grid box-panel cv-auto"></div>
                     <div id="suggested-table-container" class="box-panel p-3 text-center cursor-pointer hover:border-amber-300 transition-colors">
                         <h3 class="text-sm text-gray-400 uppercase tracking-wider">ĐỀ XUẤT BÀN CHƠI TỈ LỆ WIN CAO NHẤT</h3>
                         <p id="suggested-table-name" class="text-2xl font-bold text-[var(--neon-gold)] glow-text-gold">...</p>
@@ -1818,7 +1824,7 @@ canvas#matrix, #matrix, canvas.matrix, .matrix, .matrix-canvas, #matrix-canvas, 
             <div class="flex flex-col items-center justify-center w-full h-full p-4">
                 <button id="exitSoiHuBtn" class="back-button !top-4">‹ QUAY LẠI</button>
                 <h1 id="main-title" class="orbitron-font text-4xl md:text-5xl font-bold mb-12 text-center aurora-text tracking-widest min-h-[60px]"></h1>
-                <div id="lobby-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8 w-full max-w-5xl"></div>
+                <div id="lobby-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8 w-full max-w-5xl cv-auto"></div>
             </div>
         </div>
 
@@ -1843,7 +1849,7 @@ canvas#matrix, #matrix, canvas.matrix, .matrix, .matrix-canvas, #matrix-canvas, 
                  <div class="analysis-content glass-effect p-6 pt-16 md:pt-6 relative">
                     <button id="backToGamesBtn" class="back-button top-4 left-4 !transform-none">‹ TRỞ VỀ</button>
                     <h2 id="analysis-game-name" class="orbitron-font text-xl md:text-2xl font-bold mb-4 aurora-text text-center"></h2>
-                    <img id="analysis-game-img" src="" alt="Game Image" class="w-32 h-32 md:w-48 md:h-48 mx-auto rounded-lg mb-4 border-2 border-cyan-500 shadow-lg">
+                    <img id="analysis-game-img" src="" alt="Game Image" class="w-32 h-32 md:w-48 md:h-48 mx-auto rounded-lg mb-4 border-2 border-cyan-500 shadow-lg" loading="lazy" decoding="async" fetchpriority="low">
                     <div class="analysis-data text-left space-y-2 text-base md:text-lg">
                         <p><strong>TỈ LỆ THẮNG:</strong> <span id="analysis-win-rate" class="font-bold text-green-400"></span></p>
                         <p><strong>SỐ VÒNG XOAY:</strong> <span id="analysis-spin-count" class="font-bold text-yellow-400"></span> vòng</p>
@@ -1906,7 +1912,7 @@ canvas#matrix, #matrix, canvas.matrix, .matrix, .matrix-canvas, #matrix-canvas, 
     </div>
     <div id="aquarius-modal" class="modal-overlay hidden"><div class="modal-content"><button class="close-modal-btn">X</button><h3>Kích hoạt Siêu Lõi Aquarius</h3><p>VUI LÒNG NHẬP MÃ KÍCH HOẠT AQUARIUS</p><input type="text" id="aquarius-code-input" placeholder="MÃ KÍCH HOẠT"><p id="aquarius-error" class="auth-error"></p><div class="modal-buttons"><button id="confirm-aquarius-code" class="btn-primary">XÁC NHẬN</button><a href="https://t.me/longbaoF168" target="_blank" class="btn-style" style="border: 1px solid var(--cyan); color: var(--cyan);">LIÊN HỆ</a></div></div></div>
     <div id="low-energy-modal" class="modal-overlay hidden"><div class="modal-content warning"><button class="close-modal-btn">X</button><h3>CẢNH BÁO NĂNG LƯỢNG THẤP</h3><p>LÕI A.I ĐANG HẾT NĂNG LƯỢNG - HÃY RÚT RA NẠP LẠI ĐỂ HỒI PHỤC LÕI</p><div class="modal-buttons"><button class="close-modal-btn btn-primary" style="position: static;">ĐÃ HIỂU</button></div></div></div>
-    <div id="profile-modal" class="modal-overlay hidden"><div class="modal-content"><button class="close-modal-btn">X</button><h3>HỒ SƠ PILOT</h3><div class="profile-tabs"><button class="profile-tab active" data-tab="profile-info">Thông tin</button><button class="profile-tab" data-tab="profile-security">Bảo mật</button><button class="profile-tab" data-tab="profile-log">Nhật ký</button></div><div id="profile-info" class="profile-tab-content active"><form id="profile-form"><div class="profile-avatar-section"><img id="profile-avatar-preview" src="https://placehold.co/100x100/0A192F/00ffff?text=P" alt="Profile Avatar"><div class="profile-form-group" style="width: 100%;"><label for="profile-avatar-url">URL Ảnh Đại Diện</label><input type="text" id="profile-avatar-url" placeholder="https://example.com/image.png"></div></div><div class="profile-form-group"><label for="profile-f168-username">Tên Tài Khoản F168</label><input type="text" id="profile-f168-username" placeholder="Nhập tên tài khoản F168"><small>Chỉ được đổi 2 lần/tháng, mỗi lần cách nhau 15 ngày.</small></div><div class="profile-form-group"><label for="profile-phone">Số Điện Thoại</label><input type="tel" id="profile-phone" placeholder="Nhập số điện thoại"></div><div class="modal-buttons"><button type="submit" id="save-profile-btn" class="btn-primary">LƯU THAY ĐỔI</button></div></form></div><div id="profile-security" class="profile-tab-content"><form id="change-password-form"><div class="profile-form-group"><label for="current-password">Mật khẩu hiện tại</label><input type="password" id="current-password" required></div><div class="profile-form-group"><label for="new-password">Mật khẩu mới</label><input type="password" id="new-password" required></div><div class="modal-buttons"><button type="submit" class="btn-primary">ĐỔI MẬT KHẨU</button></div></form></div><div id="profile-log" class="profile-tab-content"><div id="activity-log-container"><div class="loading-spinner"></div></div></div></div></div>
+    <div id="profile-modal" class="modal-overlay hidden"><div class="modal-content"><button class="close-modal-btn">X</button><h3>HỒ SƠ PILOT</h3><div class="profile-tabs"><button class="profile-tab active" data-tab="profile-info">Thông tin</button><button class="profile-tab" data-tab="profile-security">Bảo mật</button><button class="profile-tab" data-tab="profile-log">Nhật ký</button></div><div id="profile-info" class="profile-tab-content active"><form id="profile-form"><div class="profile-avatar-section"><img id="profile-avatar-preview" src="https://placehold.co/100x100/0A192F/00ffff?text=P" alt="Profile Avatar" loading="lazy" decoding="async" fetchpriority="low" width="100" height="100"><div class="profile-form-group" style="width: 100%;"><label for="profile-avatar-url">URL Ảnh Đại Diện</label><input type="text" id="profile-avatar-url" placeholder="https://example.com/image.png"></div></div><div class="profile-form-group"><label for="profile-f168-username">Tên Tài Khoản F168</label><input type="text" id="profile-f168-username" placeholder="Nhập tên tài khoản F168"><small>Chỉ được đổi 2 lần/tháng, mỗi lần cách nhau 15 ngày.</small></div><div class="profile-form-group"><label for="profile-phone">Số Điện Thoại</label><input type="tel" id="profile-phone" placeholder="Nhập số điện thoại"></div><div class="modal-buttons"><button type="submit" id="save-profile-btn" class="btn-primary">LƯU THAY ĐỔI</button></div></form></div><div id="profile-security" class="profile-tab-content"><form id="change-password-form"><div class="profile-form-group"><label for="current-password">Mật khẩu hiện tại</label><input type="password" id="current-password" required></div><div class="profile-form-group"><label for="new-password">Mật khẩu mới</label><input type="password" id="new-password" required></div><div class="modal-buttons"><button type="submit" class="btn-primary">ĐỔI MẬT KHẨU</button></div></form></div><div id="profile-log" class="profile-tab-content"><div id="activity-log-container"><div class="loading-spinner"></div></div></div></div></div>
     <div id="advanced-analysis-modal" class="modal-overlay hidden">
         <div class="modal-content" style="border-color: var(--neon-green); box-shadow: inset 0 0 20px rgba(0, 255, 155, 0.3), 0 0 35px var(--neon-green);">
             <button class="close-modal-btn">X</button>
@@ -1935,9 +1941,72 @@ canvas#matrix, #matrix, canvas.matrix, .matrix, .matrix-canvas, #matrix-canvas, 
     <audio id="enterSound" src="https://www.myinstants.com/media/sounds/sci-fi-door-open.mp3" preload="auto"></audio>
     <audio id="hoverSound" src="https://www.myinstants.com/media/sounds/sci-fi-bleep-computer-2.mp3" preload="auto"></audio>
     <audio id="ambientSound" src="https://www.myinstants.com/media/sounds/cyberpunk-2077-ambience-music-scavenger-hideout-combat.mp3" preload="auto" loop></audio>
+    <!-- lazy: VanillaTilt will be loaded on demand -->
+<script type="module">// === lazy loaders ===
+const __loadedScripts = new Map();
+function loadScriptOnce(src) {
+  if (__loadedScripts.has(src)) return __loadedScripts.get(src);
+  const p = new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = src;
+    s.async = true;
+    s.onload = () => resolve();
+    s.onerror = (e) => reject(e);
+    document.head.appendChild(s);
+  });
+  __loadedScripts.set(src, p);
+  return p;
+}
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.7.2/vanilla-tilt.min.js"></script>
-    <script type="module">
+let __toneReady = false;
+async function ensureToneAndInit() {
+  if (__toneReady) return;
+  await loadScriptOnce('https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js');
+  if (typeof Tone === 'undefined') return;
+  if (typeof initializeSounds === 'function') initializeSounds();
+  __toneReady = true;
+  console.log('[perf] Tone.js loaded lazily');
+}
+
+let __vtReady = false;
+async function ensureVanillaTilt() {
+  if (__vtReady) return;
+  await loadScriptOnce('https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.7.2/vanilla-tilt.min.js');
+  if (window.VanillaTilt) {
+    const targets = document.querySelectorAll('#lobby-grid .lobby-card, [data-tilt]');
+    if (targets.length) {
+      /* lazy */ ensureVanillaTilt();
+__vtReady = true;
+      console.log('[perf] VanillaTilt initialized lazily on', targets.length, 'elements');
+    }
+  }
+}
+
+// Trigger VT load on first interaction with lobby-grid
+document.addEventListener('DOMContentLoaded', () => {
+  const lobbyGrid = document.querySelector('#lobby-grid');
+  if (!lobbyGrid) return;
+  const trigger = () => { ensureVanillaTilt(); lobbyGrid.removeEventListener('mouseenter', trigger); lobbyGrid.removeEventListener('touchstart', trigger); };
+  lobbyGrid.addEventListener('mouseenter', trigger, { once: true, passive: true });
+  lobbyGrid.addEventListener('touchstart', trigger, { once: true, passive: true });
+  if ('requestIdleCallback' in window) {
+    requestIdleCallback(() => {
+      const rect = lobbyGrid.getBoundingClientRect();
+      if (rect.top < innerHeight && rect.bottom > 0) ensureVanillaTilt();
+    }, {timeout: 2000});
+  }
+});
+
+// Defer Tone init until first user gesture (required by browsers anyway)
+['pointerdown','touchstart','mousedown','keydown'].forEach(evt => {
+  window.addEventListener(evt, function onFirstGesture() {
+    ensureToneAndInit();
+    window.removeEventListener(evt, onFirstGesture, {capture:false});
+  }, { once: true, passive: true });
+});
+// === end lazy loaders ===
+
+
         // --- FIREBASE IMPORTS ---
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { 
@@ -2347,8 +2416,8 @@ canvas#matrix, #matrix, canvas.matrix, .matrix, .matrix-canvas, #matrix-canvas, 
             tag.src = "https://www.youtube.com/iframe_api";
             document.head.appendChild(tag);
 
-            initializeSounds();
-        }
+            // initializeSounds(); // moved to lazy init on first gesture
+}
 
         function onPlayerReady(event) {
             event.target.setVolume(50);
@@ -3782,7 +3851,7 @@ canvas#matrix, #matrix, canvas.matrix, .matrix, .matrix-canvas, #matrix-canvas, 
             DOMElements.lobbyGridSoiHu.innerHTML = CONFIG.soiHuGames.lobbyGameList.map(game => `
                 <div class="lobby-card" data-lobby-id="${game.id}" data-lobby-name="${game.name}" data-tilt data-tilt-max="5" data-tilt-speed="400" data-tilt-perspective="500">
                     <div class="img-wrapper">
-                        <img src="${game.imageUrl}" alt="Avatar sảnh ${game.name}" onerror="this.onerror=null;this.src='https://placehold.co/150/1a1a1a/ffffff?text=X';" draggable="false">
+                        <img src="${game.imageUrl}" alt="Avatar sảnh ${game.name}" onerror="this.onerror=null;this.src='https://placehold.co/150/1a1a1a/ffffff?text=X';" draggable="false" loading="lazy" decoding="async" fetchpriority="low">
                     </div>
                     <h2 class="lobby-card-name">${game.name}</h2>
                     <div class="lobby-card-stats">
@@ -3797,8 +3866,8 @@ canvas#matrix, #matrix, canvas.matrix, .matrix, .matrix-canvas, #matrix-canvas, 
                 card.addEventListener('mouseenter', () => playSoundSoiHu(DOMElements.hoverSoundSoiHu));
             });
 
-            VanillaTilt.init(document.querySelectorAll("#lobby-grid .lobby-card"));
-            setInterval(updateLobbyStatsSoiHu, 3000);
+            /* lazy */ ensureVanillaTilt();
+setInterval(updateLobbyStatsSoiHu, 3000);
         }
 
         function updateLobbyStatsSoiHu() {
@@ -3828,11 +3897,11 @@ canvas#matrix, #matrix, canvas.matrix, .matrix, .matrix-canvas, #matrix-canvas, 
             const hotGameIndex = Math.floor(Math.random() * games.length);
             DOMElements.dashboardContentSoiHu.innerHTML = `
                 <h3 class="orbitron-font text-xl md:text-2xl text-center mb-4 aurora-text">${title}</h3>
-                <div class="game-grid grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 md:gap-4">
+                <div class="game-grid grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 md:gap-4 cv-auto">
                     ${games.map((game, index) => `
                         <div class="game-card ${index === hotGameIndex ? 'is-hot' : ''}" data-game-id="${game.id}">
                             ${index === hotGameIndex ? '<div class="hot-marker">HOT</div>' : ''}
-                            <img src="${game.imageUrl}" alt="${game.name}" onerror="this.onerror=null;this.src='https://placehold.co/150/1a1a1a/ffffff?text=X';">
+                            <img src="${game.imageUrl}" alt="${game.name}" onerror="this.onerror=null;this.src='https://placehold.co/150/1a1a1a/ffffff?text=X';" loading="lazy" decoding="async" fetchpriority="low">
                             <h4 class="game-card-name">${game.name}</h4>
                             <div class="game-win-rate">
                                 Tỉ lệ: <span class="win-rate-value" id="win-rate-${game.id}"></span>%
@@ -4150,6 +4219,35 @@ navigator.serviceWorker.addEventListener('controllerchange', function() {
         }
     })();
     </script>
+
+
+<style id="fix-overlap-2025-08-10">
+:root{
+  --footer-h: 96px;            /* approximate total height of footer (button + copyright) */
+  --footer-gap: 12px;
+}
+
+/* Keep footer on top of banners and content */
+#main-footer{
+  z-index: 1000 !important;
+}
+
+/* Reserve space so content doesn't hide under the footer */
+#authScreen,
+#aiCoreSelectionScreen{
+  padding-bottom: calc(var(--footer-h) + var(--footer-gap) + env(safe-area-inset-bottom, 0px)) !important;
+}
+
+/* Allow the core-selection screen to scroll independently on mobile */
+#aiCoreSelectionScreen{
+  overflow-y: auto !important;
+}
+
+/* Keep the promo banner from colliding with footer */
+#promo-banner{
+  margin-bottom: calc(var(--footer-h) + var(--footer-gap)) !important;
+}
+</style>
 
 </body>
 </html>
