@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 
 <html lang="vi">
-<head><meta content="on" http-equiv="x-dns-prefetch-control"/><link href="//upload.wikimedia.org" rel="dns-prefetch"/><link crossorigin="True" href="https://upload.wikimedia.org" rel="preconnect"/><link href="//placehold.co" rel="dns-prefetch"/><link crossorigin="True" href="https://placehold.co" rel="preconnect"/><link href="//i.ibb.co" rel="dns-prefetch"/><link crossorigin="True" href="https://i.ibb.co" rel="preconnect"/><link href="//fonts.gstatic.com" rel="dns-prefetch"/><link crossorigin="True" href="https://fonts.gstatic.com" rel="preconnect"/><link href="//fonts.googleapis.com" rel="dns-prefetch"/><link crossorigin="True" href="https://fonts.googleapis.com" rel="preconnect"/><link href="//cdnjs.cloudflare.com" rel="dns-prefetch"/><link crossorigin="True" href="https://cdnjs.cloudflare.com" rel="preconnect"/><link href="//cdn.tailwindcss.com" rel="dns-prefetch"/><link crossorigin="True" href="https://cdn.tailwindcss.com" rel="preconnect"/>
+<head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
 <link href="https://cdnjs.cloudflare.com" rel="preconnect"/>
@@ -18,8 +18,8 @@
 -->
 <!-- lazy: Tone.js will be loaded on first user gesture -->
 <!-- BỔ SUNG: Liên kết đến tệp CSS tùy chỉnh và manifest PWA -->
-<link href="style.css" rel="stylesheet"/>
-<link href="manifest.json" rel="manifest"/>
+<link href="style.css" rel="stylesheet">
+<link href="manifest.json" rel="manifest">
 <meta content="#00e6e6" name="theme-color"/>
 <style>
         /* --- CORE STYLES --- */
@@ -1641,7 +1641,25 @@ canvas#matrix, #matrix, canvas.matrix, .matrix, .matrix-canvas, #matrix-canvas, 
     }
 
 </style>
-</head>
+<style id="mobile-performance-guard">
+/* Cut expensive effects on phones */
+@media (max-width: 640px) {
+  * { 
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    filter: none !important;
+  }
+}
+/* Respect users who prefer less motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}
+</style>
+</link></link></head>
 <body>
 <canvas class="background-canvas" id="matrixCanvas"></canvas>
 <div id="youtube-player"></div>
@@ -1650,7 +1668,7 @@ canvas#matrix, #matrix, canvas.matrix, .matrix, .matrix-canvas, #matrix-canvas, 
 <div id="auth-content">
 <div class="corner-bracket top-left"></div> <div class="corner-bracket top-right"></div>
 <div class="corner-bracket bottom-left"></div> <div class="corner-bracket bottom-right"></div>
-<img alt="Logo" class="boot-anim" decoding="async" fetchpriority="high" id="auth-logo" loading="lazy" src="https://i.ibb.co/RkhcqgKC/LOGO.png" style="animation-delay: 0.2s;"/>
+<img alt="Logo" class="boot-anim" decoding="async" fetchpriority="low" height="100" id="auth-logo" loading="lazy" src="https://i.ibb.co/RkhcqgKC/LOGO.png" style="animation-delay: 0.2s;" width="100"/>
 <div id="form-container">
 <form id="loginForm">
 <h2 data-text="ĐĂNG NHẬP"></h2>
@@ -1662,7 +1680,7 @@ canvas#matrix, #matrix, canvas.matrix, .matrix, .matrix-canvas, #matrix-canvas, 
 <!-- Download app banner: provides a prominent call to action for users to install the companion app. -->
 <a class="download-banner boot-anim" href="https://limewire.com/d/H8Mto#c8FLyO73zq" style="animation-delay: 1.6s;" target="_blank">
 <!-- Add a Google Play icon so users can immediately recognise the download action -->
-<img alt="Google Play" decoding="async" fetchpriority="low" loading="lazy" src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Google_Play_2022_logo.svg/512px-Google_Play_2022_logo.svg.png" style="height: 20px; width: auto; margin-right: 8px;" width="512"/>
+<img alt="Google Play" decoding="async" fetchpriority="low" height="100" loading="lazy" src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Google_Play_2022_logo.svg/512px-Google_Play_2022_logo.svg.png" style="height: 20px; width: auto; margin-right: 8px;" width="512"/>
 <span>TẢI APP NGAY</span>
 </a>
 </form>
@@ -1828,7 +1846,7 @@ canvas#matrix, #matrix, canvas.matrix, .matrix, .matrix-canvas, #matrix-canvas, 
 <div class="analysis-content glass-effect p-6 pt-16 md:pt-6 relative">
 <button class="back-button top-4 left-4 !transform-none" id="backToGamesBtn">‹ TRỞ VỀ</button>
 <h2 class="orbitron-font text-xl md:text-2xl font-bold mb-4 aurora-text text-center" id="analysis-game-name"></h2>
-<img alt="Game Image" class="w-32 h-32 md:w-48 md:h-48 mx-auto rounded-lg mb-4 border-2 border-cyan-500 shadow-lg" decoding="async" fetchpriority="low" id="analysis-game-img" loading="lazy" src=""/>
+<img alt="Game Image" class="w-32 h-32 md:w-48 md:h-48 mx-auto rounded-lg mb-4 border-2 border-cyan-500 shadow-lg" decoding="async" fetchpriority="low" height="100" id="analysis-game-img" loading="lazy" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==" width="100"/>
 <div class="analysis-data text-left space-y-2 text-base md:text-lg">
 <p><strong>TỈ LỆ THẮNG:</strong> <span class="font-bold text-green-400" id="analysis-win-rate"></span></p>
 <p><strong>SỐ VÒNG XOAY:</strong> <span class="font-bold text-yellow-400" id="analysis-spin-count"></span> vòng</p>
@@ -3144,7 +3162,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 robot.style.top = `${rect.top}px`;
 
                 document.addEventListener('mousemove', move);
-                document.addEventListener('touchmove', move, { passive: false });
+                document.addEventListener('touchmove', move, { passive: true });
             };
 
             const stopDrag = () => {
@@ -4183,27 +4201,22 @@ navigator.serviceWorker.addEventListener('controllerchange', function() {
         }
     })();
     </script>
-<script id="raf-drawmatrix-bootstrap">
+<script id="raf-matrix-bootstrap">
 (function(){
-  if (typeof window === 'undefined') return;
   if (typeof drawMatrix !== 'function') return;
-  var rafId = null, last = 0;
-  function loop(ts){
-    if (!last) last = ts;
-    var dt = ts - last;
-    if (dt >= 32){ // ~30fps
-      try { drawMatrix(); } catch(e){ /* no-op */ }
-      last = ts;
-    }
-    rafId = requestAnimationFrame(loop);
+  let rafId;
+  function start() {
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    cancelAnimationFrame(rafId);
+    const step = () => { try { drawMatrix(); } catch(e){} rafId = requestAnimationFrame(step); };
+    rafId = requestAnimationFrame(step);
   }
-  function start(){ cancelAnimationFrame(rafId); last = 0; rafId = requestAnimationFrame(loop); }
-  document.addEventListener('visibilitychange', function(){
-    if (document.hidden) { cancelAnimationFrame(rafId); }
-    else { start(); }
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) cancelAnimationFrame(rafId);
+    else start();
   }, {passive:true});
-  window.addEventListener('pageshow', start, {once:true, passive:true});
-  if (document.visibilityState !== 'hidden') start();
+  window.addEventListener('focus', start, {once:true, passive:true});
+  start();
 })();
 </script>
 </body>

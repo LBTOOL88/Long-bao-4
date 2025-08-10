@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 
 <html lang="vi">
-<head><meta content="on" http-equiv="x-dns-prefetch-control"/><link href="//www.gstatic.com" rel="dns-prefetch"/><link crossorigin="True" href="https://www.gstatic.com" rel="preconnect"/><link href="//i.ibb.co" rel="dns-prefetch"/><link crossorigin="True" href="https://i.ibb.co" rel="preconnect"/><link href="//cdnjs.cloudflare.com" rel="dns-prefetch"/><link crossorigin="True" href="https://cdnjs.cloudflare.com" rel="preconnect"/><link href="//cdn.jsdelivr.net" rel="dns-prefetch"/><link crossorigin="True" href="https://cdn.jsdelivr.net" rel="preconnect"/>
+<head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <link href="https://cdnjs.cloudflare.com" rel="preconnect"/>
@@ -432,6 +432,24 @@ canvas#matrix, #matrix, canvas.matrix, .matrix, .matrix-canvas, #matrix-canvas, 
   visibility: hidden !important;
 }
 </style>
+<style id="mobile-performance-guard">
+/* Cut expensive effects on phones */
+@media (max-width: 640px) {
+  * { 
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    filter: none !important;
+  }
+}
+/* Respect users who prefer less motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}
+</style>
 </head>
 <body>
 <canvas id="background-canvas"></canvas>
@@ -463,13 +481,13 @@ canvas#matrix, #matrix, canvas.matrix, .matrix, .matrix-canvas, #matrix-canvas, 
 <div id="lobby-cards-container">
 <div class="lobby-card" id="select-sexy">
 <div class="lobby-card-face front">
-<img alt="Sảnh Sexy" decoding="async" fetchpriority="high" loading="lazy" src="https://i.ibb.co/ycn4gVqJ/ae.png"/>
+<img alt="Sảnh Sexy" decoding="async" fetchpriority="low" height="100" loading="lazy" src="https://i.ibb.co/ycn4gVqJ/ae.png" width="100"/>
 <div class="lobby-card-title">QUÉT SẢNH SEXY</div>
 </div>
 </div>
 <div class="lobby-card" id="select-dg">
 <div class="lobby-card-face front">
-<img alt="Sảnh DG" decoding="async" fetchpriority="low" loading="lazy" src="https://i.ibb.co/3m34bdRm/dg.png"/>
+<img alt="Sảnh DG" decoding="async" fetchpriority="low" height="100" loading="lazy" src="https://i.ibb.co/3m34bdRm/dg.png" width="100"/>
 <div class="lobby-card-title">QUÉT SẢNH DG</div>
 </div>
 </div>
