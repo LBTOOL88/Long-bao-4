@@ -1,16 +1,72 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
+
+<!-- PATCH: Safe Firebase init wrapper -->
+<script>
+// =============== PATCH START ===============
+(function(){
+  try { window.firebaseReady = false; } catch(_) {}
+  window.auth = window.auth || null;
+  window.db = window.db || null;
+  window.firebaseReady = false;
+
+  function initFirebaseSafely() {
+    try {
+      if (typeof firebase !== 'undefined') {
+        if (typeof firebase.initializeApp === 'function') {
+          try { firebase.app(); } catch (_) { try { try { firebase.app(); } catch (_){ firebase.initializeApp(window.firebaseConfig || firebaseConfig); } } catch(e){ console.warn('[PATCH] initializeApp failed (offline?)', e); } }
+        }
+        if (firebase.auth) { window.auth = firebase.auth(); }
+        if (firebase.firestore) { window.db = firebase.firestore(); }
+        window.firebaseReady = !!(window.auth || window.db);
+      } else {
+        console.warn('[PATCH] Firebase script not loaded. Running in local/offline mode.');
+      }
+    } catch (e) {
+      console.warn('[PATCH] Firebase unavailable, running offline:', e);
+      window.firebaseReady = false;
+      window.auth = window.auth || { currentUser: null, onAuthStateChanged: (cb) => { try { cb(null); } catch(_) {} }, signInAnonymously: async () => ({ user: null }) };
+      window.db = window.db || { 
+        collection: () => ({ 
+          doc: () => ({ 
+            set: async () => {}, 
+            update: async () => {}, 
+            get: async () => ({ exists: false, data: () => ({}) })
+          })
+        })
+      };
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initFirebaseSafely);
+  } else {
+    initFirebaseSafely();
+  }
+  window.addEventListener('load', function(){ if (!window.firebaseReady) initFirebaseSafely(); });
+
+  (function(){
+    var isLocalhost = /^(localhost|127\.0\.0\.1)/i.test(location.hostname);
+    if (!(location.protocol === 'https:' || isLocalhost)) {
+      console.warn('[PATCH] Trình duyệt có thể chặn camera trên kết nối không an toàn. Hãy dùng https:// hoặc http://localhost');
+    }
+  })();
+})();
+// =============== PATCH END ===============
+</script>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
     <title>YIAN SCAN</title>
     
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
 
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js" defer></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js" defer></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js" defer></script>
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;700&family=Share+Tech+Mono&display=swap');
@@ -433,6 +489,12 @@ canvas#matrix, #matrix, canvas.matrix, .matrix, .matrix-canvas, #matrix-canvas, 
   visibility: hidden !important;
 }
 </style>
+
+<!-- PATCH: ensure scan button is clickable above overlays -->
+<style>
+#scan-button { position: relative; z-index: 5; }
+</style>
+
 </head>
 <body>
     <canvas id="background-canvas"></canvas>
@@ -467,13 +529,13 @@ canvas#matrix, #matrix, canvas.matrix, .matrix, .matrix-canvas, #matrix-canvas, 
         <div id="lobby-cards-container">
             <div class="lobby-card" id="select-sexy">
                 <div class="lobby-card-face front">
-                    <img src="https://i.ibb.co/ycn4gVqJ/ae.png" alt="Sảnh Sexy">
+                    <img src="https://i.ibb.co/ycn4gVqJ/ae.png" alt="Sảnh Sexy" loading="lazy" decoding="async" fetchpriority="low">
                     <div class="lobby-card-title">QUÉT SẢNH SEXY</div>
                 </div>
             </div>
             <div class="lobby-card" id="select-dg">
                 <div class="lobby-card-face front">
-                    <img src="https://i.ibb.co/3m34bdRm/dg.png" alt="Sảnh DG">
+                    <img src="https://i.ibb.co/3m34bdRm/dg.png" alt="Sảnh DG" loading="lazy" decoding="async" fetchpriority="low">
                     <div class="lobby-card-title">QUÉT SẢNH DG</div>
                 </div>
             </div>
@@ -615,9 +677,9 @@ canvas#matrix, #matrix, canvas.matrix, .matrix, .matrix-canvas, #matrix-canvas, 
           measurementId: "G-7V7H3JWX7K"
         };
 
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.firestore();
+        try { try { firebase.app(); } catch (_){ firebase.initializeApp(firebaseConfig); } } catch(e){ console.warn('[PATCH] initializeApp failed (offline?)', e); }
+        auth = (typeof firebase !== 'undefined' && firebase.auth) ? firebase.auth() : auth;
+        db = (typeof firebase !== 'undefined' && firebase.firestore) ? firebase.firestore() : db;
         
         // --- AUTH & ENERGY SYNC (MODIFIED) ---
         async function authenticate(username, password) {
@@ -654,6 +716,7 @@ canvas#matrix, #matrix, canvas.matrix, .matrix, .matrix-canvas, #matrix-canvas, 
         }
         
         function syncEnergy(uid) {
+  if (!window.firebaseReady || !window.db) { try { console.warn('[PATCH] syncEnergy skipped - offline'); } catch(_) {} return; }
             const userDocRef = db.collection('users').doc(uid);
             if (energyListenerUnsubscribe) energyListenerUnsubscribe();
             energyListenerUnsubscribe = userDocRef.onSnapshot((doc) => {
@@ -753,6 +816,7 @@ canvas#matrix, #matrix, canvas.matrix, .matrix, .matrix-canvas, #matrix-canvas, 
         }
 
         async function startScanProcess() {
+  if (!window.firebaseReady) { try { console.warn('[PATCH] Offline mode: vẫn cho phép quét cục bộ.'); } catch(_) {} }
             if (isScanning) return;
             const currentCost = AI_CORES[activeCore].cost;
             if (userEnergy < currentCost) { 
@@ -1029,7 +1093,7 @@ canvas#matrix, #matrix, canvas.matrix, .matrix, .matrix-canvas, #matrix-canvas, 
             };
             [...hand.playerHand, ...hand.bankerHand].forEach((cardData) => { const cardMesh = createCardMesh(cardData); cardMesh.visible = false; baccaratAnimation.scene.add(cardMesh); baccaratAnimation.cardMeshes.push(cardMesh); });
             const clock = new THREE.Clock();
-            const duration = 4.0; const scanEndTime = 0.8, dealEndTime = scanEndTime + 1.0, flipEndTime = dealEndTime + 0.8, thirdCardDealEndTime = flipEndTime + 0.6;
+            const ANIM_SLOW = 1.8; const duration = 4.0*ANIM_SLOW; const scanEndTime = 0.8*ANIM_SLOW, dealEndTime = scanEndTime + 1.0*ANIM_SLOW, flipEndTime = dealEndTime + 0.8*ANIM_SLOW, thirdCardDealEndTime = flipEndTime + 0.6*ANIM_SLOW;
             const viewHeight = 12; baccaratAnimation.scannerLaser.position.y = viewHeight / 2; baccaratAnimation.scannerLaser.visible = true;
             function animate() {
                 baccaratAnimation.reqId = requestAnimationFrame(animate); const elapsedTime = clock.getElapsedTime();
