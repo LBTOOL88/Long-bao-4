@@ -264,7 +264,6 @@
             }
         }
 
-
         #core-cards-wrapper {
             position: absolute;
             width: 100%;
@@ -353,7 +352,6 @@
             100% { background-position: 200% 0; }
         }
 
-
         .core-nav-btn { 
             position: absolute;
             top: 50%;
@@ -363,7 +361,6 @@
         .core-nav-btn:hover { background: var(--cyan); color: var(--dark-blue); }
         #prev-core-btn { left: 10%; }
         #next-core-btn { right: 10%; }
-
 
         .core-card h3 { color: var(--yellow); font-size: 1.2em; margin: 0 0 10px 0; flex-shrink: 0; }
         .gif-container { width: 100%; padding-bottom: 75%; height: 0; position: relative; background-color: rgba(0,0,0,0.3); border: 1px solid var(--border-color); margin-bottom: 10px; flex-shrink: 0; }
@@ -1767,8 +1764,92 @@
   }
 </style>
 
+<link href="https://fonts.googleapis.com/css2?family=Oxanium:wght@400;600;700&family=Orbitron:wght@600;800&display=swap" rel="stylesheet">
+<link href="//fonts.gstatic.com" rel="dns-prefetch"/>
+<link crossorigin="True" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="//fonts.googleapis.com" rel="dns-prefetch"/>
+<link crossorigin="True" href="https://fonts.googleapis.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&amp;family=Inter:wght@400;700&amp;family=Roboto:wght@400;700&amp;family=Rajdhani:wght@400;700&amp;family=Fira+Code:wght@400;700&amp;family=Share+Tech+Mono&amp;display=swap" rel="stylesheet"/>
+<style id="gen5-theme">
+/* Long Bảo Core Gen-5 – Công nghệ theme */
+.theme-longbao-gen5{
+  /* Accent palette */
+  --neon-blue: #00e5ff;      /* electric cyan */
+  --neon-purple: #7b61ff;    /* indigo/violet */
+  --neon-pink: #ff4d9d;      /* magenta pink */
+  --gold: #ffd86b;           /* warm gold for badges */
+  --success-green: #4df3a3;  /* mint success */
+  --cyan: #66fcf1;
+  --yellow: #f5f749;
+  --text-light: #f6f7fb;
+  --dark-bg: #050814;
+  --container-bg: rgba(9,16,38,.65);
+  --border-color: #66fcf1;
+  --primary-color: #00e5ff;
+  --secondary-color: #7b61ff;
+  --highlight-color: #e5eeff;
+  --panel-blur: blur(14px);
+}
+
+/* Background upgrade: subtle grid + glow */
+.theme-longbao-gen5 body, body.theme-longbao-gen5{
+  background:
+    radial-gradient(50% 50% at 20% 10%, rgba(0,229,255,.15) 0%, rgba(0,0,0,0) 60%),
+    radial-gradient(40% 40% at 80% 70%, rgba(123,97,255,.12) 0%, rgba(0,0,0,0) 60%),
+    #050814;
+  color: var(--text-light);
+  font-family: "Oxanium", "Orbitron", system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+}
+
+/* Cards: glassy with slimmer borders */
+.theme-longbao-gen5 .core-card{
+  background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+  border: 1px solid rgba(102,252,241,.25);
+  box-shadow: 0 0 18px rgba(0,229,255,.25), inset 0 0 30px rgba(123,97,255,.12);
+}
+
+/* Title glow */
+.theme-longbao-gen5 h1, .theme-longbao-gen5 .title-glow{
+  text-shadow: 0 0 16px rgba(0,229,255,.65), 0 0 28px rgba(123,97,255,.45);
+  letter-spacing: .12em;
+}
+
+/* Buttons */
+.theme-longbao-gen5 .btn, .theme-longbao-gen5 button{
+  border-radius: 14px;
+  border: 1px solid rgba(102,252,241,.35);
+  box-shadow: 0 0 14px rgba(0,229,255,.25);
+}
+.theme-longbao-gen5 .btn:hover, .theme-longbao-gen5 button:hover{
+  box-shadow: 0 0 22px rgba(123,97,255,.35);
+  transform: translateY(-1px);
+}
+
+/* Progress dots & badges */
+.theme-longbao-gen5 .dot.win{ background: var(--success-green)!important; box-shadow: 0 0 8px var(--success-green);}
+.theme-longbao-gen5 .dot.loss{ background: var(--neon-pink)!important; box-shadow: 0 0 8px var(--neon-pink);}
+.theme-longbao-gen5 .winrate-badge{
+  background: linear-gradient(180deg, rgba(0,229,255,.15), rgba(123,97,255,.15));
+  border: 1px solid rgba(102,252,241,.35);
+  color: var(--text-light);
+}
+
+/* Panels */
+.theme-longbao-gen5 .box-panel{
+  background: linear-gradient(180deg, rgba(8,14,34,.9), rgba(8,14,34,.6));
+  border: 1px solid rgba(123,97,255,.3);
+}
+
+/* Optional: core selector arrows */
+.theme-longbao-gen5 .nav-arrow{
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(102,252,241,.25);
+}
+</style>
 </head>
-<body>
+<body class="theme-longbao-gen5">
 <!-- Toggle Markup: đặt vị trí tiện lợi (vd: header) -->
 <div id="youtube-player"></div>
 <div id="notification-container"></div>
@@ -2003,7 +2084,7 @@
 <!-- END SOI HỦ CORE HTML -->
 <div class="modal-overlay hidden" id="core-loading-modal">
 <div class="modal-content">
-<h3 id="loading-status-text">ĐANG KÍCH HOẠT SIÊU A.I Ở LÕI AQUARIUS</h3>
+<h3 id="loading-status-text">ĐANG KÍCH HOẠT SIÊU A.I</h3>
 <div id="loading-progress-bar-container">
 <div id="loading-progress-bar" style="width: 0%;"></div>
 </div>
@@ -2103,7 +2184,6 @@ document.addEventListener('DOMContentLoaded', () => {
   }, { once: true, passive: true });
 });
 // === end lazy loaders ===
-
 
         // --- FIREBASE IMPORTS ---
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
@@ -3150,7 +3230,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-
             if (currentUserData.energy < CONFIG.energy.costs.geminiChat) {
                 renderChatMessage({
                     username: 'A.I LongBao',
@@ -3319,7 +3398,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 robot.classList.remove('dragging-check');
             });
         }
-
 
         // --- CORE: LONGBÃO IV LOGIC ---
         let allTablesState = {};
@@ -4310,154 +4388,13 @@ navigator.serviceWorker.addEventListener('controllerchange', function() {
         }
     })();
     </script>
-<script id="raf-drawmatrix-bootstrap">
-(function(){
-  if (typeof window === 'undefined') return;
-  if (typeof drawMatrix !== 'function') return;
-  var rafId = null, last = 0;
-  function loop(ts){
-    if (!last) last = ts;
-    var dt = ts - last;
-    if (dt >= 32){ // ~30fps
-      try { drawMatrix(); } catch(e){ /* no-op */ }
-      last = ts;
-    }
-    rafId = requestAnimationFrame(loop);
-  }
-  function start(){ cancelAnimationFrame(rafId); last = 0; rafId = requestAnimationFrame(loop); }
-  document.addEventListener('visibilitychange', function(){
-    if (document.hidden) { cancelAnimationFrame(rafId); }
-    else { start(); }
-  }, {passive:true});
-  window.addEventListener('pageshow', start, {once:true, passive:true});
-  if (document.visibilityState !== 'hidden') start();
-})();
-</script>
-
-<script>
-  const canvas = document.getElementById("matrixCanvas");
-  const ctx = canvas.getContext("2d");
-
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-
-  const chars = "01";
-  const fontSize = 16;
-  const columns = canvas.width / fontSize;
-  const drops = Array.from({ length: columns }).fill(1);
-
-  function drawMatrix() {
-    ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    ctx.fillStyle = "#0F0";
-    ctx.font = fontSize + "px monospace";
-
-    for (let i = 0; i < drops.length; i++) {
-      const text = chars[Math.floor(Math.random() * chars.length)];
-      ctx.fillText(text, i * fontSize, drops[i] * fontSize);
-
-      if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
-        drops[i] = 0;
-      }
-      drops[i]++;
-    }
-  }
-
-  setInterval(drawMatrix, 33);
-  window.addEventListener('resize', () => {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-  });
-</script>
-
-<!-- Firebase Config Injection -->
-<script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyDm4pvZzojUFprNDzsnosNqTiWoWUALCUo",
-    authDomain: "longbao5v.firebaseapp.com",
-    projectId: "longbao5v",
-    storageBucket: "longbao5v.appspot.com",
-    messagingSenderId: "1234567890",
-    appId: "1:1234567890:web:abcdefghijk"
-  };
-  if (typeof firebase !== "undefined") {
-    firebase.initializeApp(firebaseConfig);
-  }
-</script>
-
-
-<div class="modal-overlay hidden" id="aquarius-loading-modal">
-  <div class="modal-content" style="border-color: var(--gold); box-shadow: inset 0 0 20px rgba(255,215,0,.3), 0 0 35px rgba(255,215,0,.6);">
-    <button class="close-modal-btn" id="close-aquarius-loading">X</button>
-    <h3 style="color: var(--gold); text-shadow: 0 0 10px var(--gold);">ĐANG KÍCH HOẠT SIÊU A.I Ở LÕI AQUARIUS</h3>
-    <div id="aquarius-loading-progress-bar-container" style="width:100%; background-color: rgba(0,0,0,0.5); border:1px solid var(--gold); border-radius:10px; padding:3px; margin-top:20px;">
-      <div id="aquarius-loading-progress-bar" style="height:20px; background: linear-gradient(90deg, var(--gold), #ff8a00); border-radius:7px; width:0%; transition:width 0.1s linear;"></div>
-    </div>
-    <p id="aquarius-loading-percentage" style="font-family:'Arial','Helvetica',sans-serif; font-size:1.4em; color:var(--gold); text-shadow:0 0 10px var(--gold); margin-top:15px;">0%</p>
-  </div>
-</div>
-
-
-<script>
-(function(){
-  function showAquariusLoading(){
-    const modal = document.getElementById('aquarius-loading-modal');
-    if(!modal) return;
-    modal.classList.remove('hidden');
-    let p = 0;
-    const bar = document.getElementById('aquarius-loading-progress-bar');
-    const label = document.getElementById('aquarius-loading-percentage');
-    const timer = setInterval(()=>{
-      p = Math.min(100, p + Math.random()*7 + 2); // tăng dần
-      bar.style.width = p.toFixed(0)+'%';
-      label.textContent = p.toFixed(0)+'%';
-      if(p >= 100){
-        clearInterval(timer);
-        // giữ modal 800ms rồi tự ẩn
-        setTimeout(()=>{ modal.classList.add('hidden'); }, 800);
-      }
-    }, 120);
-  }
-
-  // Close button
-  document.addEventListener('click', function(e){
-    if(e.target && e.target.id === 'close-aquarius-loading'){
-      e.preventDefault();
-      document.getElementById('aquarius-loading-modal')?.classList.add('hidden');
-    }
-  });
-
-  // Hook các nút khả dĩ để "nạp lõi Aquarius"
-  function shouldActivate(target){
-    if(!target) return false;
-    if(target.closest('#confirm-aquarius-code')) return true;
-    if(target.matches('#activate-aquarius, #aquarius-activate, #aquariusBtn, [data-activate-aquarius]')) return true;
-    // nếu nút có chữ "AQUARIUS" và "NẠP" hoặc "KÍCH HOẠT"
-    const text = (target.textContent || '').toUpperCase();
-    if(text.includes('AQUARIUS') && (text.includes('NẠP') || text.includes('KÍCH HOẠT'))) return true;
-    return false;
-  }
-
-  document.addEventListener('click', function(e){
-    const t = e.target;
-    if(shouldActivate(t)){
-      e.preventDefault();
-      // Ẩn modal nhập mã (nếu đang hiện)
-      document.getElementById('aquarius-modal')?.classList.add('hidden');
-      showAquariusLoading();
-    }
-  }, true);
-})();
-</script>
-
 
 <script>
 // --- Override text for Aquarius activation & loading modal ---
 (function(){
   function setActivating(){
     const h = document.getElementById('loading-status-text');
-    if(h) h.textContent = 'ĐANG KÍCH HOẠT SIÊU A.I Ở LÕI AQUARIUS';
+    if(h) h.textContent = 'ĐANG KÍCH HOẠT A.I LONG BẢO V';
   }
   function setActivated(){
     const h = document.getElementById('loading-status-text');
