@@ -1642,13 +1642,138 @@
 
 </style>
 <link href="casino.css" rel="stylesheet"/>
-</link></head>
+</link>
+<style>
+  /* ——— Chủ đề Long Bảo: Vàng-Đỏ ——— */
+  :root{
+    --cyan: #FFD700;
+    --yellow: #FFD700;
+    --dark-blue: #2b0006;
+    --text-light: #fff7d1;
+    --border-color: #FFD700;
+    --gold: #FFD700;
+    --error-red: #ff3c3c;
+  }
+
+  html, body { background-color:#1a0004; }
+
+  #auth-content{
+    border-color: var(--gold) !important;
+    box-shadow:
+      inset 0 0 14px rgba(255,215,0,.25),
+      0 0 26px rgba(255,215,0,.35) !important;
+  }
+
+  #authScreen h2{
+    color: var(--gold) !important;
+    text-shadow: 0 0 10px #ff2a2a, 0 0 22px var(--gold);
+  }
+
+  #authScreen input[type="text"],
+  #authScreen input[type="password"],
+  #authScreen input[type="tel"],
+  #authScreen input[type="number"]{
+    color: #ffeaa7;
+    border-color: rgba(255,215,0,.7);
+    background: rgba(0,0,0,.55);
+  }
+  #authScreen input:focus{
+    border-color: var(--gold);
+    box-shadow: 0 0 16px var(--gold);
+  }
+
+  #loginBtn, #registerBtn, .btn-primary{
+    background: linear-gradient(135deg,#b3001a,#ff8a00,#ffd700);
+    color:#1a0004;
+    text-transform: uppercase;
+    font-weight: 800;
+    box-shadow: 0 0 18px rgba(255,215,0,.55);
+  }
+  #loginBtn:hover, #registerBtn:hover, .btn-primary:hover{
+    transform: translateY(-1px) scale(1.03);
+    filter: saturate(1.15);
+    box-shadow: 0 0 32px rgba(255,215,0,.85);
+  }
+
+  #auth-logo{
+    border: 2px solid var(--gold) !important;
+    box-shadow: 0 0 20px var(--gold), 0 0 40px rgba(255,0,32,.35) !important;
+  }
+
+  /* ——— Nền “Rồng Công Nghệ” ——— */
+  #authScreen{
+    position: relative;
+    overflow: hidden;
+    background:
+      radial-gradient(1200px 700px at 20% 15%, rgba(255,215,0,.10), transparent),
+      radial-gradient(900px 600px at 80% 70%, rgba(255,0,64,.12), transparent),
+      linear-gradient(180deg,#120005 0%, #1a0004 50%, #120005 100%);
+  }
+
+  #dragon-tech-bg{
+    position: absolute; inset: 0;
+    z-index: 0; pointer-events: none;
+    --dragon-url: url('https://i.ibb.co/3mJ3m5v/dragon-wire-gold.webp');
+    background:
+      repeating-linear-gradient(0deg, rgba(255,215,0,.06) 0 1px, transparent 1px 6px),
+      repeating-linear-gradient(90deg, rgba(255,215,0,.05) 0 1px, transparent 1px 6px),
+      radial-gradient(600px 400px at 65% 40%, rgba(255, 215, 0, .08), transparent 60%);
+
+    filter: drop-shadow(0 0 18px rgba(255,215,0,.25));
+    opacity:.75;
+    animation: dragonFloat 18s ease-in-out infinite;
+  }
+
+  #dragon-tech-bg::after{
+    content:"";
+    position:absolute; inset:-20% 0 auto 0; height:4px;
+    background: linear-gradient(90deg,transparent, rgba(255,215,0,.85), transparent);
+    box-shadow: 0 0 18px rgba(255,215,0,.95);
+    animation: scanLine 3.2s linear infinite;
+    mix-blend-mode: screen; opacity:.85;
+  }
+
+  #dragon-tech-bg::before{
+    content:"";
+    position:absolute; inset:0;
+    background-image:
+      radial-gradient(rgba(255,215,0,.9) 1px, transparent 1px),
+      radial-gradient(rgba(255,120,0,.8) 1px, transparent 1px);
+    background-size: 3px 3px, 4px 4px;
+    background-position: 0 0, 20px 10px;
+    opacity:.22;
+    animation: twinkle 6s ease-in-out infinite alternate;
+    mix-blend-mode: screen;
+  }
+
+  @keyframes dragonFloat{
+    0%   { transform: translate3d(0,0,0) scale(1); }
+    50%  { transform: translate3d(0,-1.2%,0) scale(1.015); }
+    100% { transform: translate3d(0,0,0) scale(1); }
+  }
+  @keyframes scanLine{
+    0%{ top:-20%; }
+    100%{ top:120%; }
+  }
+  @keyframes twinkle{
+    0%  { opacity:.18; transform: translateY(0); }
+    100%{ opacity:.30; transform: translateY(-8px); }
+  }
+
+  #auth-content{ position: relative; z-index: 1; }
+
+  @media (max-width:640px){
+    #dragon-tech-bg{ opacity:.6; }
+  }
+</style>
+
+</head>
 <body>
 <!-- Toggle Markup: đặt vị trí tiện lợi (vd: header) -->
-<canvas class="background-canvas" id="matrixCanvas"></canvas>
 <div id="youtube-player"></div>
 <div id="notification-container"></div>
 <div id="authScreen">
+<div id="dragon-tech-bg" aria-hidden="true"></div>
 <div id="auth-content">
 <div class="corner-bracket top-left"></div> <div class="corner-bracket top-right"></div>
 <div class="corner-bracket bottom-left"></div> <div class="corner-bracket bottom-right"></div>
@@ -1878,7 +2003,7 @@
 <!-- END SOI HỦ CORE HTML -->
 <div class="modal-overlay hidden" id="core-loading-modal">
 <div class="modal-content">
-<h3 id="loading-status-text">ĐANG NẠP LÕI...</h3>
+<h3 id="loading-status-text">ĐANG KÍCH HOẠT SIÊU A.I Ở LÕI AQUARIUS</h3>
 <div id="loading-progress-bar-container">
 <div id="loading-progress-bar" style="width: 0%;"></div>
 </div>
@@ -4259,6 +4384,116 @@ navigator.serviceWorker.addEventListener('controllerchange', function() {
   if (typeof firebase !== "undefined") {
     firebase.initializeApp(firebaseConfig);
   }
+</script>
+
+
+<div class="modal-overlay hidden" id="aquarius-loading-modal">
+  <div class="modal-content" style="border-color: var(--gold); box-shadow: inset 0 0 20px rgba(255,215,0,.3), 0 0 35px rgba(255,215,0,.6);">
+    <button class="close-modal-btn" id="close-aquarius-loading">X</button>
+    <h3 style="color: var(--gold); text-shadow: 0 0 10px var(--gold);">ĐANG KÍCH HOẠT SIÊU A.I Ở LÕI AQUARIUS</h3>
+    <div id="aquarius-loading-progress-bar-container" style="width:100%; background-color: rgba(0,0,0,0.5); border:1px solid var(--gold); border-radius:10px; padding:3px; margin-top:20px;">
+      <div id="aquarius-loading-progress-bar" style="height:20px; background: linear-gradient(90deg, var(--gold), #ff8a00); border-radius:7px; width:0%; transition:width 0.1s linear;"></div>
+    </div>
+    <p id="aquarius-loading-percentage" style="font-family:'Arial','Helvetica',sans-serif; font-size:1.4em; color:var(--gold); text-shadow:0 0 10px var(--gold); margin-top:15px;">0%</p>
+  </div>
+</div>
+
+
+<script>
+(function(){
+  function showAquariusLoading(){
+    const modal = document.getElementById('aquarius-loading-modal');
+    if(!modal) return;
+    modal.classList.remove('hidden');
+    let p = 0;
+    const bar = document.getElementById('aquarius-loading-progress-bar');
+    const label = document.getElementById('aquarius-loading-percentage');
+    const timer = setInterval(()=>{
+      p = Math.min(100, p + Math.random()*7 + 2); // tăng dần
+      bar.style.width = p.toFixed(0)+'%';
+      label.textContent = p.toFixed(0)+'%';
+      if(p >= 100){
+        clearInterval(timer);
+        // giữ modal 800ms rồi tự ẩn
+        setTimeout(()=>{ modal.classList.add('hidden'); }, 800);
+      }
+    }, 120);
+  }
+
+  // Close button
+  document.addEventListener('click', function(e){
+    if(e.target && e.target.id === 'close-aquarius-loading'){
+      e.preventDefault();
+      document.getElementById('aquarius-loading-modal')?.classList.add('hidden');
+    }
+  });
+
+  // Hook các nút khả dĩ để "nạp lõi Aquarius"
+  function shouldActivate(target){
+    if(!target) return false;
+    if(target.closest('#confirm-aquarius-code')) return true;
+    if(target.matches('#activate-aquarius, #aquarius-activate, #aquariusBtn, [data-activate-aquarius]')) return true;
+    // nếu nút có chữ "AQUARIUS" và "NẠP" hoặc "KÍCH HOẠT"
+    const text = (target.textContent || '').toUpperCase();
+    if(text.includes('AQUARIUS') && (text.includes('NẠP') || text.includes('KÍCH HOẠT'))) return true;
+    return false;
+  }
+
+  document.addEventListener('click', function(e){
+    const t = e.target;
+    if(shouldActivate(t)){
+      e.preventDefault();
+      // Ẩn modal nhập mã (nếu đang hiện)
+      document.getElementById('aquarius-modal')?.classList.add('hidden');
+      showAquariusLoading();
+    }
+  }, true);
+})();
+</script>
+
+
+<script>
+// --- Override text for Aquarius activation & loading modal ---
+(function(){
+  function setActivating(){
+    const h = document.getElementById('loading-status-text');
+    if(h) h.textContent = 'ĐANG KÍCH HOẠT SIÊU A.I Ở LÕI AQUARIUS';
+  }
+  function setActivated(){
+    const h = document.getElementById('loading-status-text');
+    if(h) h.textContent = 'KÍCH HOẠT SIÊU A.I THÀNH CÔNG!';
+  }
+  // Mutation observer để đổi mọi câu "NẠP LÕI..." thành "KÍCH HOẠT..."
+  const target = document.getElementById('core-loading-modal') || document.body;
+  if(target){
+    const obs = new MutationObserver(()=>{
+      const h = document.getElementById('loading-status-text');
+      if(!h) return;
+      const t = (h.textContent || '').toUpperCase();
+      if(t.includes('NẠP LÕI THÀNH CÔNG')) setActivated();
+      else if(t.includes('NẠP LÕI') || t.includes('ĐANG NẠP')) setActivating();
+    });
+    obs.observe(target, { childList:true, subtree:true, characterData:true });
+  }
+  // Khi bấm các nút liên quan AQUARIUS -> ép dùng cụm từ "KÍCH HOẠT SIÊU A.I"
+  function shouldActivate(target){
+    if(!target) return false;
+    if(target.closest && target.closest('#confirm-aquarius-code')) return true;
+    if(target.matches && target.matches('#activate-aquarius, #aquarius-activate, #aquariusBtn, [data-activate-aquarius]')) return true;
+    const txt = (target.textContent || '').toUpperCase();
+    return txt.includes('AQUARIUS') && (txt.includes('NẠP') || txt.includes('KÍCH HOẠT'));
+  }
+  document.addEventListener('click', function(e){
+    const t = e.target;
+    if(shouldActivate(t)){
+      // Nếu modal loading lõi đang dùng, đổi text ngay tức thì
+      setActivating();
+      // Nếu đang có modal riêng "aquarius-modal", ẩn nó để chỉ dùng 1 modal loading
+      const old = document.getElementById('aquarius-modal');
+      if(old) old.classList.add('hidden');
+    }
+  }, true);
+})();
 </script>
 
 </body>
